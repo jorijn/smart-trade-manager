@@ -1,0 +1,9 @@
+db:
+  image: mysql:5.7
+  ports:
+    - "3306:3306"
+  environment:
+    - MYSQL_ROOT_PASSWORD=root
+    - MYSQL_DATABASE=exchange_quick_oco
+  volumes:
+    - "./.docker/development/data/mysql:/var/lib/mysql:delegated"
