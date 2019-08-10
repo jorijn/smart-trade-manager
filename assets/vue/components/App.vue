@@ -1,16 +1,39 @@
 <template>
-  <v-app id="inspire">
-    <v-app-bar app color="indigo" dark>
+  <v-app>
+    <v-navigation-drawer app v-model="drawer">
+      <v-list>
+        <v-list-item to="/trading">
+          <v-list-item-action>
+            <v-icon>fas fa-home</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Trading</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item to="/about">
+          <v-list-item-action>
+            <v-icon>fas fa-address-card</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>About</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-app-bar
+      app
+      prominent
+      color="primary"
+      :src="require('../../img/nav-bar-background.jpg')"
+    >
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title>Exchange Quick OCO</v-toolbar-title>
     </v-app-bar>
 
     <v-content>
-      <v-container fluid fill-height>
-        <v-layout align-center justify-center>
-          <v-flex text-center>
-            <p>Hoi :-)</p>
-          </v-flex>
-        </v-layout>
+      <v-container fluid>
+        <router-view></router-view>
       </v-container>
     </v-content>
   </v-app>
@@ -18,7 +41,10 @@
 
 <script>
 export default {
-  name: "app"
+  name: "app",
+  data: () => ({
+    drawer: null
+  })
 };
 </script>
 
