@@ -1,0 +1,20 @@
+App\Model\StopLoss:
+  type: entity
+  repositoryClass: App\Repository\StopLossRepository
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    price:
+      type: decimal
+      precision: 27
+      scale: 18
+  oneToOne:
+    trade:
+      targetEntity: Trade
+      inversedBy: stoploss
+      joinColumn:
+        name: trade_id
+        referencedColumnName: id

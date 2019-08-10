@@ -1,0 +1,26 @@
+App\Model\Trade:
+  type: entity
+  repositoryClass: App\Repository\TradeRepository
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    symbol:
+      type: string
+      length: 50
+    quantity:
+      type: decimal
+      precision: 27
+      scale: 18
+  oneToOne:
+    stoploss:
+      targetEntity: StopLoss
+      joinColumn:
+        onDelete: CASCADE
+  oneToMany:
+    takeProfits:
+      targetEntity: TakeProfit
+      mappedBy: trade
+      cascade: ["persist", "merge"]

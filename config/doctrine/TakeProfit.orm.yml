@@ -1,0 +1,29 @@
+App\Model\TakeProfit:
+  type: entity
+  repositoryClass: App\Repository\TakeProfitRepository
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: AUTO
+  fields:
+    quantity:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: true
+    percentage:
+      type: decimal
+      precision: 3
+      scale: 0
+      nullable: true
+    amountType:
+      type: smallint
+      nullable: false
+      comment: 'indicates type for take-profit order, 1 being fixed quantity, 2 being percentage of trade amount'
+  manyToOne:
+    trade:
+      targetEntity: Trade
+      joinColumn:
+        name: trade_id
+        referencedColumnName: id
