@@ -16,7 +16,6 @@ class ExchangeConfiguration implements ConfigurationInterface
 
         $treeBuiler->getRootNode()
             ->children()
-                ->scalarNode('api_endpoint')->isRequired()->end()
                 ->scalarNode('api_key')->isRequired()->end()
                 ->scalarNode('api_secret')->isRequired()->end()
             ->end()
