@@ -1,5 +1,4 @@
 import "@fortawesome/fontawesome-free/js/all";
-// import "@fortawesome/fontawesome-free/js/brands";
 import Vue from "vue";
 import Vuetify from "vuetify/lib";
 
