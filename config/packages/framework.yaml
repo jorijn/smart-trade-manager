@@ -14,3 +14,11 @@ framework:
   #fragments: true
   php_errors:
     log: true
+
+  http_client:
+    scoped_clients:
+      binance_api.client:
+        base_uri: https://api.binance.com/api/
+        cafile: "%kernel.project_dir%/certificates/cacert.pem"
+        verify_host: true
+        verify_peer: true

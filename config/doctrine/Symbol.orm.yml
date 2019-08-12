@@ -1,0 +1,35 @@
+App\Model\Symbol:
+  type: entity
+  repositoryClass: App\Repository\SymbolRepository
+  id:
+    symbol:
+      type: string
+      generator:
+        strategy: NONE
+  fields:
+    status:
+      type: string
+      nullable: false
+    baseAsset:
+      type: string
+      nullable: false
+    baseAssetPrecision:
+      type: smallint
+      unsigned: true
+      nullable: false
+    quoteAsset:
+      type: string
+      nullable: false
+    quotePrecision:
+      type: integer
+      nullable: false
+      unsigned: true
+    icebergAllowed:
+      type: boolean
+      nullable: false
+    isSpotTradingAllowed:
+      type: boolean
+      nullable: false
+    isMarginTradingAllowed:
+      type: boolean
+      nullable: false
