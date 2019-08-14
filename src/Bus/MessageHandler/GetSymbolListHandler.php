@@ -33,10 +33,10 @@ class GetSymbolListHandler implements MessageHandlerInterface
     /**
      * @param GetSymbolListCommand $command
      *
-     * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws ClientExceptionInterface
      *
      * @return Symbol[]|array
      */
