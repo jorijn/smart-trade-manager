@@ -8,6 +8,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 class ApiCredentialsHttpClientDecorator extends AbstractHttpClientDecorator
 {
     const HASH_ALGO = 'sha256';
+    
     /** @var string */
     protected $apiKey;
     /** @var string */
