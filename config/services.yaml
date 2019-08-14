@@ -30,3 +30,5 @@ services:
     class: App\Decorator\ApiCredentialsHttpClientDecorator
     arguments:
       - '@app.http_client.binance.credential_decorator.inner'
+      - '%app.config.exchange.api_key%'
+      - '%app.config.exchange.api_secret%'
