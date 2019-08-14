@@ -48,10 +48,6 @@ class ApiCredentialsHttpClientDecorator extends AbstractHttpClientDecorator
                 [$method, $url, $options] = $this->addApiKeyToRequest($method, $url, $options);
             case 'NONE':
             default:
-//                dump($method);
-//                dump($url);
-//                dump($options);
-//                exit;
                 return parent::request($method, $url, $options);
         }
     }

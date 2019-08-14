@@ -85,7 +85,7 @@ class StartBuyingForNewTradeHandler implements MessageHandlerInterface
         }
 
         /**
-         * TODO: split it up smartly, take lot size into account, put the weight on the coin (0.1/10 instead of quantity/10)
+         * TODO: split it up smartly, take lot size into account
          * @see https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md#lot_size
          */
 
