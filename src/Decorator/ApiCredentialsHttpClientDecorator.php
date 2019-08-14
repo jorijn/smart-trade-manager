@@ -28,8 +28,6 @@ class ApiCredentialsHttpClientDecorator extends AbstractHttpClientDecorator
     }
 
     /**
-     * TODO: implement usage of server time for offset.
-     *
      * This decorator implementation on the HttpClientInterface will check the given options for
      * a specific type of security key, depending on which — the decorator will sign the request
      * and add the API key to the header array.
@@ -50,6 +48,10 @@ class ApiCredentialsHttpClientDecorator extends AbstractHttpClientDecorator
                 [$method, $url, $options] = $this->addApiKeyToRequest($method, $url, $options);
             case 'NONE':
             default:
+//                dump($method);
+//                dump($url);
+//                dump($options);
+//                exit;
                 return parent::request($method, $url, $options);
         }
     }
@@ -90,8 +92,7 @@ class ApiCredentialsHttpClientDecorator extends AbstractHttpClientDecorator
         // if the request was designed to be a POST request, take all the options and move them to the body --
         // only signature is allowed as query string
         if ($method === 'POST') {
-            $options['body'] = $parameters;
-            $options['query'] = ['signature' => $signature];
+            $options['body'] = array_merge($parameters, ['signature' => $signature]);
         } else {
             $options['query'] = array_merge($parameters, ['signature' => $signature]);
         }

@@ -1,0 +1,51 @@
+App\Model\Order:
+  type: entity
+  repositoryClass: App\Repository\OrderRepository
+  id:
+    newClientOrderId:
+      type: string
+      generator:
+        strategy: AUTO
+  fields:
+    symbol:
+      type: string
+      nullable: false
+    side:
+      type: string
+      nullable: false
+    type:
+      type: string
+      nullable: false
+    timeInForce:
+      type: string
+      nullable: true
+    quantity:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: false
+    price:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: false
+    stopPrice:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: true
+    icebergQty:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: true
+    newOrderRespType:
+      type: string
+      nullable: true
+    recvWindow:
+      type: integer
+      nullable: true
+    timestamp:
+      type: string
+      length: 20
+      nullable: false

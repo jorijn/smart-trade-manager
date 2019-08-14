@@ -14,13 +14,22 @@ App\Model\Trade:
       type: decimal
       precision: 27
       scale: 18
+    entryLow:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: false
+    entryHigh:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: true
   oneToOne:
     stoploss:
       targetEntity: StopLoss
-      joinColumn:
-        onDelete: CASCADE
+      cascade: ["persist", "remove", "merge"]
   oneToMany:
     takeProfits:
       targetEntity: TakeProfit
       mappedBy: trade
-      cascade: ["persist", "merge"]
+      cascade: ["persist", "remove", "merge"]
