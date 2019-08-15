@@ -2,7 +2,6 @@
 
 namespace App\Command;
 
-use PHP\Math\BigNumber\BigNumber;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -52,6 +51,6 @@ class TradeSendOcoCommand extends Command
 
         // TODO implement rounding to tick size
         // @see https://github.com/jaggedsoft/node-binance-api/blob/master/node-binance-api.js#L881
-        dump(json_decode($response->getContent()));
+        dump(json_decode($response->getContent(false)));
     }
 }

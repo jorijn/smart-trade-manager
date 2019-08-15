@@ -18,3 +18,4 @@ App\Model\StopLoss:
       joinColumn:
         name: trade_id
         referencedColumnName: id
+        onDelete: CASCADE

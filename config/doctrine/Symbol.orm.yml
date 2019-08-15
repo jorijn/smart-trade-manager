@@ -33,3 +33,11 @@ App\Model\Symbol:
     isMarginTradingAllowed:
       type: boolean
       nullable: false
+    ocoAllowed:
+      type: boolean
+      nullable: false
+  oneToMany:
+    filters:
+      targetEntity: SymbolFilter
+      mappedBy: symbol
+      cascade: ["persist", "merge"]

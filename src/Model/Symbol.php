@@ -22,6 +22,10 @@ class Symbol
     protected $isSpotTradingAllowed;
     /** @var bool */
     protected $isMarginTradingAllowed;
+    /** @var bool */
+    protected $ocoAllowed;
+    /** @var SymbolFilter[] */
+    protected $filters;
 
     /**
      * @return string
@@ -201,5 +205,41 @@ class Symbol
         $this->isMarginTradingAllowed = $isMarginTradingAllowed;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOcoAllowed(): bool
+    {
+        return $this->ocoAllowed;
+    }
+
+    /**
+     * @param bool $ocoAllowed
+     */
+    public function setOcoAllowed(bool $ocoAllowed): void
+    {
+        $this->ocoAllowed = $ocoAllowed;
+    }
+
+    /**
+     * @return SymbolFilter[]
+     */
+    public function getFilters(): array
+    {
+        return $this->filters;
+    }
+
+    /**
+     * @param SymbolFilter[] $filters
+     */
+    public function setFilters(array $filters): void
+    {
+        foreach ($filters as $filter) {
+            $filter->setSymbol($this);
+        }
+
+        $this->filters = $filters;
     }
 }

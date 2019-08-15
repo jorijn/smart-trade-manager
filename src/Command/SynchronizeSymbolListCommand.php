@@ -52,24 +52,21 @@ class SynchronizeSymbolListCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        // clear the symbol list
         $repository = $this->entityManager->getRepository(Symbol::class);
-        $existingSymbols = array_keys($repository->associativeFindAll());
-        $processed = [];
+        $repository->deleteAll();
 
         /** @var Symbol[] $apiSymbols */
         $apiSymbols = $this->handle(new GetSymbolListCommand());
 
         // merge & persist all symbols to the ORM, flag symbol as processed
         foreach ($apiSymbols as $symbol) {
-            $this->entityManager->merge($symbol);
+            $this->entityManager->persist($symbol);
             $processed[] = $symbol->getSymbol();
         }
 
         // flush changes to the database
         $this->entityManager->flush();
-
-        // delete all symbols that are not processed (longer present on the server)
-        $repository->removeSymbols(...array_diff($existingSymbols, $processed));
 
         $io->success(sprintf('processed %s symbols.', count($apiSymbols)));
     }

@@ -27,9 +27,9 @@ App\Model\Trade:
   oneToOne:
     stoploss:
       targetEntity: StopLoss
-      cascade: ["persist", "remove", "merge"]
+      cascade: ["persist", "merge"]
   oneToMany:
     takeProfits:
       targetEntity: TakeProfit
       mappedBy: trade
-      cascade: ["persist", "remove", "merge"]
+      cascade: ["persist", "merge"]
