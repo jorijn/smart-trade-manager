@@ -68,7 +68,7 @@ class StartBuyingForNewTradeHandler implements MessageHandlerInterface
         $low = new BigNumber($trade->getEntryLow(), $symbol->getQuotePrecision(), false);
         $high = new BigNumber($trade->getEntryHigh(), $symbol->getQuotePrecision(), false);
         $difference = $high->subtract($low);
-        $step = $difference->divide($this->ladderSteps);
+        $priceStep = $difference->divide($this->ladderSteps);
         $quantityStep = (new BigNumber($trade->getQuantity()))->divide($this->ladderSteps);
 
         // TODO make prettier
@@ -76,7 +76,7 @@ class StartBuyingForNewTradeHandler implements MessageHandlerInterface
         foreach (range(1, $this->ladderSteps) as $orderNumber) {
             $order = new Order();
             $order->setSymbol($symbol->getSymbol());
-            $order->setPrice($low->add($step->multiply($orderNumber)));
+            $order->setPrice($low->add($priceStep->multiply($orderNumber)));
             $order->setSide(Order::BUY);
             $order->setType(Order::LIMIT);
             $order->setQuantity($quantityStep);
@@ -92,7 +92,7 @@ class StartBuyingForNewTradeHandler implements MessageHandlerInterface
         foreach ($orders as $order) {
             $response = $this->binanceApiClient->request('POST', 'v3/order', [
                 'extra' => ['security_type' => 'TRADE'],
-                'query' => $order->toApiAttributes()
+                'post' => $order->toApiAttributes()
             ]);
         }
     }
