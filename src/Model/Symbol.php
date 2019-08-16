@@ -4,6 +4,16 @@ namespace App\Model;
 
 class Symbol
 {
+    public const PRICE_FILTER = 'PRICE_FILTER';
+    public const PERCENT_PRICE = 'PERCENT_PRICE';
+    public const LOT_SIZE = 'LOT_SIZE';
+    public const MIN_NOTIONAL = 'MIN_NOTIONAL';
+    public const ICEBERG_PARTS = 'ICEBERG_PARTS';
+    public const MARKET_LOT_SIZE = '';
+    public const MAX_NUM_ORDERS = 'MAX_NUM_ORDERS';
+    public const MAX_NUM_ALGO_ORDERS = 'MAX_NUM_ALGO_ORDERS';
+    public const MAX_NUM_ICEBERG_ORDERS = 'MAX_NUM_ICEBERG_ORDERS';
+
     /** @var string */
     protected $symbol;
     /** @var string */
@@ -241,5 +251,21 @@ class Symbol
         }
 
         $this->filters = $filters;
+    }
+
+    /**
+     * @param string $filterType
+     *
+     * @return SymbolFilter|null
+     */
+    public function getFilter(string $filterType): ?SymbolFilter
+    {
+        foreach ($this->getFilters() as $filter) {
+            if ($filter->getFilterType() === $filterType) {
+                return $filter;
+            }
+        }
+
+        return null;
     }
 }

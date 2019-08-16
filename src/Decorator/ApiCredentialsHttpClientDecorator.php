@@ -42,10 +42,12 @@ class ApiCredentialsHttpClientDecorator extends AbstractHttpClientDecorator
             case 'TRADE':
             case 'USER_DATA':
                 [$method, $url, $options] = $this->addSignatureToRequest($method, $url, $options);
+                // no break
             case 'USER_STREAM':
             case 'MARKET_DATA':
                 /* @noinspection SuspiciousAssignmentsInspection */
                 [$method, $url, $options] = $this->addApiKeyToRequest($method, $url, $options);
+                // no break
             case 'NONE':
             default:
                 return parent::request($method, $url, $options);

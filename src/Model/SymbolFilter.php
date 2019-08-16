@@ -9,7 +9,7 @@ class SymbolFilter
     /** @var Symbol */
     protected $symbol;
     /** @var string */
-    protected $filter;
+    protected $filterType;
     /** @var array */
     protected $parameters = [];
 
@@ -34,33 +34,29 @@ class SymbolFilter
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getFilter(): string
+    public function getId(): int
     {
-        return $this->filter;
+        return $this->id;
     }
 
     /**
-     * @param string $filter
+     * @return string
+     */
+    public function getFilterType(): string
+    {
+        return $this->filterType;
+    }
+
+    /**
+     * @param string $filterType
      *
      * @return SymbolFilter
      */
-    public function setFilter(string $filter): SymbolFilter
+    public function setFilterType(string $filterType): SymbolFilter
     {
-        $this->filter = $filter;
-
-        return $this;
-    }
-
-    /**
-     * This is for the serializer component
-     *
-     * @param string $filterType
-     */
-    public function setFilterType(string $filterType)
-    {
-        $this->filter = $filterType;
+        $this->filterType = $filterType;
 
         return $this;
     }
@@ -74,13 +70,23 @@ class SymbolFilter
     }
 
     /**
-     * Magic setter for Serializer
+     * Magic setter for Serializer.
      *
      * @param string $name
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function __set(string $name, $value)
     {
         $this->parameters[$name] = $value;
+    }
+
+    /**
+     * @param string $parameter
+     *
+     * @return mixed|null
+     */
+    public function getParameter(string $parameter): ?string
+    {
+        return $this->parameters[$parameter] ?? null;
     }
 }

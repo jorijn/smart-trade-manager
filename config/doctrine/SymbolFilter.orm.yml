@@ -10,9 +10,9 @@ App\Model\SymbolFilter:
     - name: idx_unique
       columns:
         - symbol
-        - filter
+        - filter_type
   fields:
-    filter:
+    filterType:
       type: string
       nullable: false
     parameters:
