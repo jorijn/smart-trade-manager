@@ -2,23 +2,53 @@
 
 namespace App\Model;
 
-use PHP\Math\BigNumber\BigNumber;
-
 class StopLoss
 {
     /** @var int|null */
     protected $id;
-    /** @var string|BigNumber */
+    /** @var string */
     protected $price;
     /** @var Trade */
     protected $trade;
 
     /**
-     * @param string|BigNumber $price
+     * @return int|null
      */
-    public function __construct($price)
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int|null $id
+     *
+     * @return StopLoss
+     */
+    public function setId(?int $id): StopLoss
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrice(): string
+    {
+        return $this->price;
+    }
+
+    /**
+     * @param string $price
+     *
+     * @return StopLoss
+     */
+    public function setPrice(string $price): StopLoss
     {
         $this->price = $price;
+
+        return $this;
     }
 
     /**
@@ -31,33 +61,13 @@ class StopLoss
 
     /**
      * @param Trade $trade
+     *
+     * @return StopLoss
      */
-    public function setTrade(Trade $trade): void
+    public function setTrade(Trade $trade): StopLoss
     {
         $this->trade = $trade;
-    }
 
-    /**
-     * @return BigNumber|string
-     */
-    public function getPrice()
-    {
-        return $this->price;
-    }
-
-    /**
-     * @param BigNumber|string $price
-     */
-    public function setPrice($price): void
-    {
-        $this->price = $price;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
+        return $this;
     }
 }

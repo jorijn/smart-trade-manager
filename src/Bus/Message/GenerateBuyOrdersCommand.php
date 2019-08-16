@@ -2,7 +2,7 @@
 
 namespace App\Bus\Message;
 
-class StartBuyingForNewTradeCommand
+class GenerateBuyOrdersCommand
 {
     /** @var int */
     protected $tradeId;
@@ -21,13 +21,5 @@ class StartBuyingForNewTradeCommand
     public function getTradeId(): int
     {
         return $this->tradeId;
-    }
-
-    /**
-     * @param int $tradeId
-     */
-    public function setTradeId(int $tradeId): void
-    {
-        $this->tradeId = $tradeId;
     }
 }

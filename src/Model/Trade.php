@@ -2,64 +2,22 @@
 
 namespace App\Model;
 
-use PHP\Math\BigNumber\BigNumber;
-
 class Trade
 {
     /** @var int|null */
     protected $id;
     /** @var string */
     protected $symbol;
-    /** @var string|BigNumber */
+    /** @var string */
     protected $quantity;
     /** @var StopLoss|null */
     protected $stoploss;
-    /** @var BigNumber|string */
+    /** @var string */
     protected $entryLow;
-    /** @var BigNumber|string|null */
+    /** @var string|null */
     protected $entryHigh;
     /** @var TakeProfit[] */
     protected $takeProfits;
-
-    /**
-     * @return BigNumber|string
-     */
-    public function getEntryLow()
-    {
-        return $this->entryLow;
-    }
-
-    /**
-     * @param BigNumber|string $entryLow
-     *
-     * @return Trade
-     */
-    public function setEntryLow($entryLow)
-    {
-        $this->entryLow = $entryLow;
-
-        return $this;
-    }
-
-    /**
-     * @return BigNumber|string|null
-     */
-    public function getEntryHigh()
-    {
-        return $this->entryHigh;
-    }
-
-    /**
-     * @param BigNumber|string|null $entryHigh
-     *
-     * @return Trade
-     */
-    public function setEntryHigh($entryHigh)
-    {
-        $this->entryHigh = $entryHigh;
-
-        return $this;
-    }
 
     /**
      * @return int|null
@@ -70,11 +28,11 @@ class Trade
     }
 
     /**
-     * @param int $id
+     * @param int|null $id
      *
      * @return Trade
      */
-    public function setId(int $id): Trade
+    public function setId(?int $id): Trade
     {
         $this->id = $id;
 
@@ -102,19 +60,19 @@ class Trade
     }
 
     /**
-     * @return BigNumber|string
+     * @return string
      */
-    public function getQuantity()
+    public function getQuantity(): string
     {
         return $this->quantity;
     }
 
     /**
-     * @param BigNumber|string $quantity
+     * @param string $quantity
      *
      * @return Trade
      */
-    public function setQuantity($quantity)
+    public function setQuantity(string $quantity): Trade
     {
         $this->quantity = $quantity;
 
@@ -137,6 +95,46 @@ class Trade
     public function setStoploss(?StopLoss $stoploss): Trade
     {
         $this->stoploss = $stoploss;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEntryLow(): string
+    {
+        return $this->entryLow;
+    }
+
+    /**
+     * @param string $entryLow
+     *
+     * @return Trade
+     */
+    public function setEntryLow(string $entryLow): Trade
+    {
+        $this->entryLow = $entryLow;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEntryHigh(): ?string
+    {
+        return $this->entryHigh;
+    }
+
+    /**
+     * @param string|null $entryHigh
+     *
+     * @return Trade
+     */
+    public function setEntryHigh(?string $entryHigh): Trade
+    {
+        $this->entryHigh = $entryHigh;
 
         return $this;
     }

@@ -35,10 +35,10 @@ class ExchangePriceFormatter implements LoggerAwareInterface
         $filter = $this->getFilterFromSymbol($market ? Symbol::MARKET_LOT_SIZE : Symbol::LOT_SIZE, $symbol);
         $stepSize = $this->getParameterFromFilter($symbol, $filter, 'stepSize');
 
-        $desiredDecimals = max((int)strpos($stepSize, '1') - 1, 0);
+        $desiredDecimals = max((int) strpos($stepSize, '1') - 1, 0);
         $decimalIndex = strpos($quantity, '.');
 
-        return substr($quantity, 0, $decimalIndex + $desiredDecimals + (int)($desiredDecimals > 0));
+        return substr($quantity, 0, $decimalIndex + $desiredDecimals + (int) ($desiredDecimals > 0));
     }
 
     /**
@@ -104,6 +104,6 @@ class ExchangePriceFormatter implements LoggerAwareInterface
         $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 8);
         $precision = strlen(explode('.', $formatter->format($tickSize))[1]) ?? 0;
 
-        return (string)round((float)$price, $precision);
+        return (string) round((float) $price, $precision);
     }
 }

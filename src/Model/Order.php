@@ -2,8 +2,6 @@
 
 namespace App\Model;
 
-use PHP\Math\BigNumber\BigNumber;
-
 class Order
 {
     public const LIMIT = 'LIMIT';
@@ -24,15 +22,15 @@ class Order
     protected $type;
     /** @var string|null */
     protected $timeInForce = 'GTC';
-    /** @var string|BigNumber */
+    /** @var string */
     protected $quantity;
-    /** @var string|BigNumber */
+    /** @var string */
     protected $price;
     /** @var string|null */
     protected $newClientOrderId;
-    /** @var string|BigNumber|null */
+    /** @var string|null */
     protected $stopPrice;
-    /** @var string|BigNumber|null */
+    /** @var string|null */
     protected $icebergQty;
     /** @var string|null */
     protected $newOrderRespType = 'FULL';
@@ -64,11 +62,11 @@ class Order
         }
 
         if ($this->stopPrice) {
-            $attributes['stopPrice'] = (string) $this->stopPrice;
+            $attributes['stopPrice'] = $this->stopPrice;
         }
 
         if ($this->icebergQty) {
-            $attributes['icebergQty'] = (string) $this->icebergQty;
+            $attributes['icebergQty'] = $this->icebergQty;
         }
 
         if ($this->newOrderRespType) {
@@ -143,19 +141,19 @@ class Order
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTimeInForce(): string
+    public function getTimeInForce(): ?string
     {
         return $this->timeInForce;
     }
 
     /**
-     * @param string $timeInForce
+     * @param string|null $timeInForce
      *
      * @return Order
      */
-    public function setTimeInForce(string $timeInForce): Order
+    public function setTimeInForce(?string $timeInForce): Order
     {
         $this->timeInForce = $timeInForce;
 
@@ -163,19 +161,19 @@ class Order
     }
 
     /**
-     * @return BigNumber|string
+     * @return string
      */
-    public function getQuantity()
+    public function getQuantity(): string
     {
         return $this->quantity;
     }
 
     /**
-     * @param BigNumber|string $quantity
+     * @param string $quantity
      *
      * @return Order
      */
-    public function setQuantity($quantity)
+    public function setQuantity(string $quantity): Order
     {
         $this->quantity = $quantity;
 
@@ -183,19 +181,19 @@ class Order
     }
 
     /**
-     * @return BigNumber|string
+     * @return string
      */
-    public function getPrice()
+    public function getPrice(): string
     {
         return $this->price;
     }
 
     /**
-     * @param BigNumber|string $price
+     * @param string $price
      *
      * @return Order
      */
-    public function setPrice($price)
+    public function setPrice(string $price): Order
     {
         $this->price = $price;
 
@@ -223,19 +221,19 @@ class Order
     }
 
     /**
-     * @return BigNumber|string
+     * @return string|null
      */
-    public function getStopPrice()
+    public function getStopPrice(): ?string
     {
         return $this->stopPrice;
     }
 
     /**
-     * @param BigNumber|string $stopPrice
+     * @param string|null $stopPrice
      *
      * @return Order
      */
-    public function setStopPrice($stopPrice)
+    public function setStopPrice(?string $stopPrice): Order
     {
         $this->stopPrice = $stopPrice;
 
@@ -243,19 +241,19 @@ class Order
     }
 
     /**
-     * @return BigNumber|string
+     * @return string|null
      */
-    public function getIcebergQty()
+    public function getIcebergQty(): ?string
     {
         return $this->icebergQty;
     }
 
     /**
-     * @param BigNumber|string $icebergQty
+     * @param string|null $icebergQty
      *
      * @return Order
      */
-    public function setIcebergQty($icebergQty)
+    public function setIcebergQty(?string $icebergQty): Order
     {
         $this->icebergQty = $icebergQty;
 
@@ -263,19 +261,19 @@ class Order
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getNewOrderRespType(): string
+    public function getNewOrderRespType(): ?string
     {
         return $this->newOrderRespType;
     }
 
     /**
-     * @param string $newOrderRespType
+     * @param string|null $newOrderRespType
      *
      * @return Order
      */
-    public function setNewOrderRespType(string $newOrderRespType): Order
+    public function setNewOrderRespType(?string $newOrderRespType): Order
     {
         $this->newOrderRespType = $newOrderRespType;
 
@@ -283,19 +281,19 @@ class Order
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getRecvWindow(): int
+    public function getRecvWindow(): ?int
     {
         return $this->recvWindow;
     }
 
     /**
-     * @param int $recvWindow
+     * @param int|null $recvWindow
      *
      * @return Order
      */
-    public function setRecvWindow(int $recvWindow): Order
+    public function setRecvWindow(?int $recvWindow): Order
     {
         $this->recvWindow = $recvWindow;
 
@@ -303,19 +301,19 @@ class Order
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getTimestamp(): int
+    public function getTimestamp(): string
     {
         return $this->timestamp;
     }
 
     /**
-     * @param int $timestamp
+     * @param string $timestamp
      *
      * @return Order
      */
-    public function setTimestamp(int $timestamp): Order
+    public function setTimestamp(string $timestamp): Order
     {
         $this->timestamp = $timestamp;
 

@@ -2,8 +2,6 @@
 
 namespace App\Model;
 
-use PHP\Math\BigNumber\BigNumber;
-
 class TakeProfit
 {
     /** @var int|null */
@@ -12,20 +10,10 @@ class TakeProfit
     protected $quantity;
     /** @var int */
     protected $percentage;
-    /** @var string|BigNumber */
+    /** @var string */
     protected $price;
     /** @var Trade */
     protected $trade;
-
-    /**
-     * @param string|BigNumber $price
-     * @param int              $percentage
-     */
-    public function __construct($price, int $percentage = 100)
-    {
-        $this->price = $price;
-        $this->percentage = $percentage;
-    }
 
     /**
      * @return int|null
@@ -36,11 +24,11 @@ class TakeProfit
     }
 
     /**
-     * @param int $id
+     * @param int|null $id
      *
      * @return TakeProfit
      */
-    public function setId(int $id): TakeProfit
+    public function setId(?int $id): TakeProfit
     {
         $this->id = $id;
 
@@ -88,6 +76,26 @@ class TakeProfit
     }
 
     /**
+     * @return string
+     */
+    public function getPrice(): string
+    {
+        return $this->price;
+    }
+
+    /**
+     * @param string $price
+     *
+     * @return TakeProfit
+     */
+    public function setPrice(string $price): TakeProfit
+    {
+        $this->price = $price;
+
+        return $this;
+    }
+
+    /**
      * @return Trade
      */
     public function getTrade(): Trade
@@ -105,21 +113,5 @@ class TakeProfit
         $this->trade = $trade;
 
         return $this;
-    }
-
-    /**
-     * @return BigNumber|string
-     */
-    public function getPrice()
-    {
-        return $this->price;
-    }
-
-    /**
-     * @param BigNumber|string $price
-     */
-    public function setPrice($price): void
-    {
-        $this->price = $price;
     }
 }
