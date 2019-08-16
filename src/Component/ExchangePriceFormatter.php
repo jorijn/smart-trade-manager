@@ -6,6 +6,7 @@ use App\Exception\FilterNotFoundException;
 use App\Exception\FilterParameterNotFoundException;
 use App\Model\Symbol;
 use App\Model\SymbolFilter;
+use NumberFormatter;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
@@ -34,10 +35,10 @@ class ExchangePriceFormatter implements LoggerAwareInterface
         $filter = $this->getFilterFromSymbol($market ? Symbol::MARKET_LOT_SIZE : Symbol::LOT_SIZE, $symbol);
         $stepSize = $this->getParameterFromFilter($symbol, $filter, 'stepSize');
 
-        $desiredDecimals = max((int) strpos($stepSize, '1') - 1, 0);
+        $desiredDecimals = max((int)strpos($stepSize, '1') - 1, 0);
         $decimalIndex = strpos($quantity, '.');
 
-        return substr($quantity, 0, $decimalIndex + $desiredDecimals + (int) ($desiredDecimals > 0));
+        return substr($quantity, 0, $decimalIndex + $desiredDecimals + (int)($desiredDecimals > 0));
     }
 
     /**
@@ -87,8 +88,22 @@ class ExchangePriceFormatter implements LoggerAwareInterface
         return $value;
     }
 
+    /**
+     * @param Symbol $symbol
+     * @param string $price
+     *
+     * @return string
+     */
     public function roundTicks(Symbol $symbol, string $price): string
     {
-        // get tick size
+        $filter = $this->getFilterFromSymbol(Symbol::PRICE_FILTER, $symbol);
+        $tickSize = $this->getParameterFromFilter($symbol, $filter, 'tickSize');
+
+        $formatter = new NumberFormatter('en_US', NumberFormatter::DECIMAL);
+        $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 0);
+        $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 8);
+        $precision = strlen(explode('.', $formatter->format($tickSize))[1]) ?? 0;
+
+        return (string)round((float)$price, $precision);
     }
 }
