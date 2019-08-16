@@ -46,7 +46,6 @@ class ExchangePriceFormatter implements LoggerAwareInterface
      */
     public function getStepScale(Symbol $symbol, bool $market = false): int
     {
-        // TODO unit test
         $filter = $this->getFilterFromSymbol($market ? Symbol::MARKET_LOT_SIZE : Symbol::LOT_SIZE, $symbol);
         $stepSize = $this->getParameterFromFilter($symbol, $filter, 'stepSize');
 
@@ -120,7 +119,6 @@ class ExchangePriceFormatter implements LoggerAwareInterface
      */
     public function getPriceScale(Symbol $symbol): int
     {
-        // TODO unit tests
         $filter = $this->getFilterFromSymbol(Symbol::PRICE_FILTER, $symbol);
         $tickSize = $this->getParameterFromFilter($symbol, $filter, 'tickSize');
 

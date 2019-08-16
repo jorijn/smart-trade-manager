@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * @coversDefaultClass \App\Component\ExchangePriceFormatter
+ * @covers ::__construct
  */
 class ExchangePriceFormatterTest extends TestCase
 {
@@ -46,6 +47,7 @@ class ExchangePriceFormatterTest extends TestCase
      * @covers ::roundStep
      * @covers ::getFilterFromSymbol
      * @covers ::getParameterFromFilter
+     * @covers ::getStepScale
      * @dataProvider providerOfRoundStepCases
      *
      * @param string $stepSize
@@ -70,6 +72,7 @@ class ExchangePriceFormatterTest extends TestCase
      * @covers ::roundStep
      * @covers ::getFilterFromSymbol
      * @covers ::getParameterFromFilter
+     * @covers ::getStepScale
      * @dataProvider providerOfRoundStepCases
      *
      * @param string $stepSize
@@ -126,6 +129,10 @@ class ExchangePriceFormatterTest extends TestCase
 
     /**
      * @dataProvider providerOfRoundTicksCases
+     * @covers ::getPriceScale
+     * @covers ::roundTicks
+     * @covers ::getParameterFromFilter
+     * @covers ::getFilterFromSymbol
      *
      * @param string $tickSize
      * @param string $price
@@ -143,9 +150,10 @@ class ExchangePriceFormatterTest extends TestCase
     }
 
     /**
-     * @covers ::roundStep
-     * @covers ::getFilterFromSymbol
+     * @covers ::getPriceScale
+     * @covers ::roundTicks
      * @covers ::getParameterFromFilter
+     * @covers ::getFilterFromSymbol
      * @dataProvider providerOfRoundTicksCases
      *
      * @param string $tickSize
@@ -167,9 +175,10 @@ class ExchangePriceFormatterTest extends TestCase
     }
 
     /**
-     * @covers ::roundStep
-     * @covers ::getFilterFromSymbol
+     * @covers ::getPriceScale
+     * @covers ::roundTicks
      * @covers ::getParameterFromFilter
+     * @covers ::getFilterFromSymbol
      * @dataProvider providerOfRoundTicksCases
      *
      * @param string $tickSize
