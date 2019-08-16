@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use Doctrine\ORM\PersistentCollection;
+
 class Symbol
 {
     public const PRICE_FILTER = 'PRICE_FILTER';
@@ -9,7 +11,7 @@ class Symbol
     public const LOT_SIZE = 'LOT_SIZE';
     public const MIN_NOTIONAL = 'MIN_NOTIONAL';
     public const ICEBERG_PARTS = 'ICEBERG_PARTS';
-    public const MARKET_LOT_SIZE = '';
+    public const MARKET_LOT_SIZE = 'MARKET_LOT_SIZE';
     public const MAX_NUM_ORDERS = 'MAX_NUM_ORDERS';
     public const MAX_NUM_ALGO_ORDERS = 'MAX_NUM_ALGO_ORDERS';
     public const MAX_NUM_ICEBERG_ORDERS = 'MAX_NUM_ICEBERG_ORDERS';
@@ -35,7 +37,7 @@ class Symbol
     /** @var bool */
     protected $ocoAllowed;
     /** @var SymbolFilter[] */
-    protected $filters;
+    protected $filters = [];
 
     /**
      * @return string
@@ -234,9 +236,9 @@ class Symbol
     }
 
     /**
-     * @return SymbolFilter[]
+     * @return SymbolFilter[]|PersistentCollection
      */
-    public function getFilters(): array
+    public function getFilters()
     {
         return $this->filters;
     }

@@ -20,5 +20,6 @@ class AppExtension extends Extension
         // set the API configuration
         $container->setParameter('app.config.exchange.api_key', $config['exchange']['api_key']);
         $container->setParameter('app.config.exchange.api_secret', $config['exchange']['api_secret']);
+        $container->setParameter('app.config.exchange.ladder_size', $config['exchange']['ladder_size']);
     }
 }

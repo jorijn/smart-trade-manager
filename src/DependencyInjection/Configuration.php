@@ -20,6 +20,7 @@ class Configuration implements ConfigurationInterface
                     ->children()
                         ->scalarNode('api_key')->isRequired()->end()
                         ->scalarNode('api_secret')->isRequired()->end()
+                        ->integerNode('ladder_size')->defaultValue(10)->end()
                     ->end()
             ->end()
         ;

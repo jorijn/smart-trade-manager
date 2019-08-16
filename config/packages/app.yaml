@@ -2,3 +2,4 @@ app:
   exchange:
     api_key: '%env(EXCHANGE_API_KEY)%'
     api_secret: '%env(EXCHANGE_API_SECRET)%'
+    ladder_size: '%env(int:EXCHANGE_LADDER_SIZE)%'

@@ -27,6 +27,11 @@ services:
       - '@Psr\Log\LoggerInterface'
 
   App\OrderGenerator\LimitLadderBuyOrderGenerator:
+    arguments:
+      - '@App\Component\ExchangePriceFormatter'
+      - '@doctrine.orm.entity_manager'
+      - '@Psr\Log\LoggerInterface'
+      - '%app.config.exchange.ladder_size%'
     tags:
       - { name: 'app.order_generator.buy', priority: 10 }
 

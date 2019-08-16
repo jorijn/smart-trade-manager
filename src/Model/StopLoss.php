@@ -12,6 +12,14 @@ class StopLoss
     protected $trade;
 
     /**
+     * @param string $price
+     */
+    public function __construct(string $price)
+    {
+        $this->price = $price;
+    }
+
+    /**
      * @return int|null
      */
     public function getId(): ?int
