@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Bus\Message;
+namespace App\Bus\Message\Query;
 
-class GenerateBuyOrdersCommand
+class BuyOrdersQuery
 {
     /** @var int */
     protected $tradeId;

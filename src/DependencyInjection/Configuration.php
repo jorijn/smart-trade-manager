@@ -21,6 +21,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('api_key')->isRequired()->end()
                         ->scalarNode('api_secret')->isRequired()->end()
                         ->integerNode('ladder_size')->defaultValue(10)->end()
+                        ->booleanNode('api_debugging_enabled')->defaultValue(false)->end()
                     ->end()
             ->end()
         ;

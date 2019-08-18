@@ -1,33 +1,29 @@
 <?php
 
-namespace App\Bus\MessageHandler;
+namespace App\Bus\MessageHandler\Command;
 
-use App\Bus\Message\CreateExchangeOrdersCommand;
+use App\Bus\Message\Command\CreateExchangeOrdersCommand;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class CreateExchangeOrdersHandler implements MessageHandlerInterface, LoggerAwareInterface
+class CreateExchangeOrdersHandler implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
+
     /** @var HttpClientInterface */
     protected $binanceApiClient;
 
     /**
      * @param HttpClientInterface $binanceApiClient
-     * @param LoggerInterface     $logger
      */
-    public function __construct(HttpClientInterface $binanceApiClient, LoggerInterface $logger)
+    public function __construct(HttpClientInterface $binanceApiClient)
     {
         $this->binanceApiClient = $binanceApiClient;
-
-        $this->setLogger($logger);
     }
 
     /**

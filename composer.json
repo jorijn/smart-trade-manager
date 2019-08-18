@@ -6,6 +6,7 @@
     "ext-bcmath": "*",
     "ext-ctype": "*",
     "ext-iconv": "*",
+    "amphp/websocket-client": "^0.2.4",
     "symfony/asset": "4.3.*",
     "symfony/console": "4.3.*",
     "symfony/dotenv": "4.3.*",
@@ -16,12 +17,15 @@
     "symfony/messenger": "4.3.*",
     "symfony/monolog-bundle": "^3.4",
     "symfony/orm-pack": "^1.0",
+    "symfony/property-access": "4.3.*",
     "symfony/serializer-pack": "^1.0",
     "symfony/translation": "4.3.*",
     "symfony/twig-bundle": "4.3.*",
     "symfony/validator": "4.3.*",
     "symfony/webpack-encore-bundle": "^1.6",
-    "symfony/yaml": "4.3.*"
+    "symfony/yaml": "4.3.*",
+    "ext-pcntl": "*",
+    "ext-json": "*"
   },
   "require-dev": {
     "symfony/maker-bundle": "^1.12",

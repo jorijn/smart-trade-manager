@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Bus\MessageHandler;
+namespace App\Bus\MessageHandler\Query;
 
-use App\Bus\Message\GetSymbolListCommand;
+use App\Bus\Message\Query\SymbolListQuery;
 use App\Model\ExchangeInfo;
 use App\Model\Symbol;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
@@ -13,7 +13,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class GetSymbolListHandler implements MessageHandlerInterface
+class SymbolListQueryHandler implements MessageHandlerInterface
 {
     /** @var HttpClientInterface */
     protected $binanceApiClient;
@@ -31,16 +31,16 @@ class GetSymbolListHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param GetSymbolListCommand $command
+     * @param SymbolListQuery $command
      *
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
+     *@throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
      *
      * @return Symbol[]|array
      */
-    public function __invoke(GetSymbolListCommand $command)
+    public function __invoke(SymbolListQuery $command)
     {
         $response = $this->binanceApiClient->request('GET', 'v1/exchangeInfo');
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Bus\Message;
+namespace App\Bus\Message\Command;
 
 use App\Model\Order;
 

@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Bus\Message\GetSymbolListCommand;
+use App\Bus\Message\Query\SymbolListQuery;
 use App\Model\Symbol;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -23,17 +23,17 @@ class SynchronizeSymbolListCommand extends Command
 
     /**
      * @param string|null            $name
-     * @param MessageBusInterface    $messageBus
+     * @param MessageBusInterface    $queryBus
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(
         string $name = null,
-        MessageBusInterface $messageBus,
+        MessageBusInterface $queryBus,
         EntityManagerInterface $entityManager
     ) {
         parent::__construct($name);
 
-        $this->messageBus = $messageBus;
+        $this->messageBus = $queryBus;
         $this->entityManager = $entityManager;
     }
 
@@ -57,7 +57,7 @@ class SynchronizeSymbolListCommand extends Command
         $repository->deleteAll();
 
         /** @var Symbol[] $apiSymbols */
-        $apiSymbols = $this->handle(new GetSymbolListCommand());
+        $apiSymbols = $this->handle(new SymbolListQuery());
 
         // merge & persist all symbols to the ORM, flag symbol as processed
         foreach ($apiSymbols as $symbol) {

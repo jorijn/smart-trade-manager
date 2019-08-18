@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Bus\MessageHandler;
+namespace App\Bus\MessageHandler\Query;
 
-use App\Bus\Message\GenerateBuyOrdersCommand;
+use App\Bus\Message\Query\BuyOrdersQuery;
 use App\Exception\TradeNotFoundException;
 use App\Exception\UnsupportedTradeException;
 use App\Model\Order;
@@ -13,10 +13,8 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
-class GenerateBuyOrdersHandler implements MessageHandlerInterface, LoggerAwareInterface
+class BuyOrdersQueryHandler implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -30,23 +28,20 @@ class GenerateBuyOrdersHandler implements MessageHandlerInterface, LoggerAwareIn
     /**
      * @param ObjectManager                         $manager
      * @param BuyOrderGeneratorInterface[]|iterable $orderGenerators
-     * @param LoggerInterface                       $logger
      */
-    public function __construct(ObjectManager $manager, iterable $orderGenerators, LoggerInterface $logger)
+    public function __construct(ObjectManager $manager, iterable $orderGenerators)
     {
         $this->manager = $manager;
         $this->tradeRepository = $this->manager->getRepository(Trade::class);
         $this->orderGenerators = $orderGenerators;
-
-        $this->setLogger($logger);
     }
 
     /**
-     * @param GenerateBuyOrdersCommand $command
+     * @param BuyOrdersQuery $command
      *
      * @return Order[]
      */
-    public function __invoke(GenerateBuyOrdersCommand $command): array
+    public function __invoke(BuyOrdersQuery $command): array
     {
         $tradeId = $command->getTradeId();
         $trade = $this->tradeRepository->find($tradeId);

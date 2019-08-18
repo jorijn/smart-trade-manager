@@ -7,7 +7,28 @@ services:
 
   App\:
     resource: '../src/*'
-    exclude: '../src/{DependencyInjection,Model,Migrations,Tests,Kernel.php}'
+    exclude: '../src/{Bus,DependencyInjection,Model,Migrations,Tests,Kernel.php}'
+
+  command_handlers:
+    namespace: App\Bus\MessageHandler\Command\
+    resource: '%kernel.project_dir%/src/Bus/MessageHandler/Command/*Handler.php'
+    autoconfigure: false
+    tags:
+      - { name: messenger.message_handler, bus: command.bus }
+
+  query_handlers:
+    namespace: App\Bus\MessageHandler\Query\
+    resource: '%kernel.project_dir%/src/Bus/MessageHandler/Query/*QueryHandler.php'
+    autoconfigure: false
+    tags:
+      - { name: messenger.message_handler, bus: query.bus }
+
+  event_handlers:
+    namespace: App\Bus\MessageHandler\Event\
+    resource: '%kernel.project_dir%/src/Bus/MessageHandler/Event/*EventHandler.php'
+    autoconfigure: false
+    tags:
+      - { name: messenger.message_handler, bus: event.bus }
 
   App\Controller\:
     resource: '../src/Controller'
@@ -15,16 +36,31 @@ services:
 
   App\Decorator\ApiCredentialsHttpClientDecorator:
     decorates: binance_api.client
+    decoration_priority: 5
     arguments:
       - '@App\Decorator\ApiCredentialsHttpClientDecorator.inner'
       - '%app.config.exchange.api_key%'
       - '%app.config.exchange.api_secret%'
 
-  App\Bus\MessageHandler\GenerateBuyOrdersHandler:
+  App\Decorator\VerboseHttpClientDecorator:
+    decorates: binance_api.client
+    decoration_priority: 10
+    arguments:
+      - '@App\Decorator\VerboseHttpClientDecorator.inner'
+      - '%app.config.exchange.api_debugging_enabled%'
+
+  App\Bus\MessageHandler\Query\BuyOrdersQueryHandler:
     arguments:
       - '@doctrine.orm.entity_manager'
       - !tagged app.order_generator.buy
-      - '@Psr\Log\LoggerInterface'
+    tags:
+      - { name: messenger.message_handler, bus: query.bus }
+
+  App\Bus\MessageHandler\Event\WebsocketEventHandler:
+    arguments:
+      - !tagged app.websocket_event.handler
+    tags:
+      - { name: messenger.message_handler, bus: event.bus }
 
   App\OrderGenerator\LimitLadderBuyOrderGenerator:
     arguments:
@@ -38,3 +74,7 @@ services:
   App\OrderGenerator\LimitBuyOrderGenerator:
     tags:
       - { name: 'app.order_generator.buy', priority: 0 }
+
+  App\Bus\MessageHandler\Event\Websocket\OutboundAccountPositionEventHandler:
+    tags:
+      - app.websocket_event.handler
