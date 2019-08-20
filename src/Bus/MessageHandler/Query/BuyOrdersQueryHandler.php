@@ -13,6 +13,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 
 class BuyOrdersQueryHandler implements LoggerAwareInterface
 {
@@ -28,12 +29,15 @@ class BuyOrdersQueryHandler implements LoggerAwareInterface
     /**
      * @param ObjectManager                         $manager
      * @param BuyOrderGeneratorInterface[]|iterable $orderGenerators
+     * @param LoggerInterface                       $logger
      */
-    public function __construct(ObjectManager $manager, iterable $orderGenerators)
+    public function __construct(ObjectManager $manager, iterable $orderGenerators, LoggerInterface $logger)
     {
         $this->manager = $manager;
         $this->tradeRepository = $this->manager->getRepository(Trade::class);
         $this->orderGenerators = $orderGenerators;
+
+        $this->setLogger($logger);
     }
 
     /**

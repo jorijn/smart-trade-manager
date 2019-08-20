@@ -16,6 +16,16 @@ class TakeProfit
     protected $trade;
 
     /**
+     * @param string $price
+     * @param int    $percentage
+     */
+    public function __construct(string $price, int $percentage)
+    {
+        $this->price = $price;
+        $this->percentage = $percentage;
+    }
+
+    /**
      * @return int|null
      */
     public function getId(): ?int

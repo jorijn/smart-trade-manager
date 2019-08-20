@@ -27,8 +27,6 @@ class Order
     /** @var string */
     protected $price;
     /** @var string|null */
-    protected $newClientOrderId;
-    /** @var string|null */
     protected $stopPrice;
     /** @var string|null */
     protected $icebergQty;
@@ -36,8 +34,56 @@ class Order
     protected $newOrderRespType = 'FULL';
     /** @var int|null */
     protected $recvWindow = 60000;
-    /** @var string */
-    protected $timestamp;
+    /** @var string|null */
+    protected $clientOrderId;
+    /** @var string|null */
+    protected $status;
+    /** @var string|null */
+    protected $filledQuantity;
+    /** @var int */
+    protected $updatedAt;
+    /** @var string|null */
+    protected $filledQuoteQuantity;
+
+    /**
+     * @return string|null
+     */
+    public function getFilledQuoteQuantity(): ?string
+    {
+        return $this->filledQuoteQuantity;
+    }
+
+    /**
+     * @param string|null $filledQuoteQuantity
+     *
+     * @return Order
+     */
+    public function setFilledQuoteQuantity(?string $filledQuoteQuantity): Order
+    {
+        $this->filledQuoteQuantity = $filledQuoteQuantity;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUpdatedAt(): int
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @param int $updatedAt
+     *
+     * @return Order
+     */
+    public function setUpdatedAt(int $updatedAt): Order
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
 
     /**
      * @return array
@@ -50,15 +96,10 @@ class Order
             'type' => $this->type,
             'quantity' => (string) $this->quantity,
             'price' => (string) $this->price,
-            'timestamp' => $this->timestamp,
         ];
 
         if ($this->timeInForce) {
             $attributes['timeInForce'] = $this->timeInForce;
-        }
-
-        if ($this->newClientOrderId) {
-            $attributes['newClientOrderId'] = $this->newClientOrderId;
         }
 
         if ($this->stopPrice) {
@@ -203,26 +244,6 @@ class Order
     /**
      * @return string|null
      */
-    public function getNewClientOrderId(): ?string
-    {
-        return $this->newClientOrderId;
-    }
-
-    /**
-     * @param string|null $newClientOrderId
-     *
-     * @return Order
-     */
-    public function setNewClientOrderId(?string $newClientOrderId): Order
-    {
-        $this->newClientOrderId = $newClientOrderId;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
     public function getStopPrice(): ?string
     {
         return $this->stopPrice;
@@ -301,21 +322,61 @@ class Order
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTimestamp(): string
+    public function getClientOrderId(): string
     {
-        return $this->timestamp;
+        return $this->clientOrderId;
     }
 
     /**
-     * @param string $timestamp
+     * @param string|null $clientOrderId
      *
      * @return Order
      */
-    public function setTimestamp(string $timestamp): Order
+    public function setClientOrderId(string $clientOrderId): Order
     {
-        $this->timestamp = $timestamp;
+        $this->clientOrderId = $clientOrderId;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param string|null $status
+     *
+     * @return Order
+     */
+    public function setStatus(?string $status): Order
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFilledQuantity(): ?string
+    {
+        return $this->filledQuantity;
+    }
+
+    /**
+     * @param string|null $filledQuantity
+     *
+     * @return Order
+     */
+    public function setFilledQuantity(?string $filledQuantity): Order
+    {
+        $this->filledQuantity = $filledQuantity;
 
         return $this;
     }

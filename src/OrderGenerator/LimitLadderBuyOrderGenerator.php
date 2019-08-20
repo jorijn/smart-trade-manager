@@ -139,7 +139,7 @@ class LimitLadderBuyOrderGenerator extends AbstractBuyOrderGenerator
             }
         } else {
             // unable to create a ladder within the lot rules, revert to single order
-            yield [$quantity, $rangeHigh];
+            yield [bcdiv($quantity, $rangeHigh, $stepScale), $rangeHigh];
         }
     }
 }

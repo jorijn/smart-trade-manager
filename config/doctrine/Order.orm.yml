@@ -1,11 +1,18 @@
 App\Model\Order:
   type: entity
+  table: exchange_order
   repositoryClass: App\Repository\OrderRepository
   id:
-    newClientOrderId:
+    clientOrderId:
       type: string
       generator:
-        strategy: AUTO
+        strategy: NONE
+  indexes:
+    idx_sdx1:
+      columns:
+        - client_order_id
+        - status
+        - filled_quantity
   fields:
     symbol:
       type: string
@@ -45,7 +52,19 @@ App\Model\Order:
     recvWindow:
       type: integer
       nullable: true
-    timestamp:
+    status:
       type: string
-      length: 20
-      nullable: false
+      nullable: true
+    filledQuantity:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: true
+    filledQuoteQuantity:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: true
+    updatedAt:
+      type: bigint
+      nullable: true

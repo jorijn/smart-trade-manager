@@ -12,6 +12,11 @@ App\Model\TakeProfit:
       precision: 3
       scale: 0
       nullable: true
+    price:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: false
   manyToOne:
     trade:
       targetEntity: Trade
