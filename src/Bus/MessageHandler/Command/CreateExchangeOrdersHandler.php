@@ -3,6 +3,7 @@
 namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\CreateExchangeOrdersCommand;
+use App\Event\OrderCreatedEvent;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -51,7 +52,7 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
      */
     public function __invoke(CreateExchangeOrdersCommand $command)
     {
-        $this->logger->notice('starting dispatching of new order batch');
+        $this->logger->info('starting dispatching of new order batch');
 
         foreach ($command->getOrders() as $order) {
             $this->logger->info('dispatching order', ['order' => $order]);
@@ -61,30 +62,32 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
                 'body' => $order->toApiAttributes(),
             ]);
 
-            $object = $result->toArray(false);
+            $result = $result->toArray(false);
 
-            // TODO maybe create a listener for this? extract logic
-            if (isset($object['code'])) {
+            // TODO maybe create a listener for this? -> extract logic
+            if (isset($result['code'])) {
                 $this->logger->error('failed to create order', [
                     'order' => $order,
-                    'code' => $object['code'],
-                    'reason' => $object['msg'],
+                    'code' => $result['code'],
+                    'reason' => $result['msg'],
                 ]);
 
                 continue;
             }
 
-            $order->setClientOrderId($object['clientOrderId']);
-            $order->setUpdatedAt($object['transactTime']);
-            $order->setStatus($object['status']);
-            $order->setQuantity($object['origQty']);
-            $order->setFilledQuantity($object['executedQty'] ?? null);
-            $order->setTimeInForce($object['timeInForce']);
-            $order->setType($object['type']);
-            $order->setSide($object['side']);
-            $order->setFilledQuoteQuantity($object['cummulativeQuoteQty'] ?? null);
+            $order->setOrderId($result['orderId']);
+            $order->setUpdatedAt($result['transactTime']);
+            $order->setStatus($result['status']);
+            $order->setQuantity($result['origQty']);
+            $order->setFilledQuantity($result['executedQty'] ?? null);
+            $order->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
+            $order->setTimeInForce($result['timeInForce']);
+            $order->setType($result['type']);
+            $order->setSide($result['side']);
 
             $this->manager->persist($order);
+
+            $this->dispatcher->dispatch(new OrderCreatedEvent($order));
         }
 
         $this->manager->flush();

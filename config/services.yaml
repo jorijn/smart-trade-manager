@@ -83,3 +83,8 @@ services:
   App\Bus\MessageHandler\Event\Websocket\ExecutionReportEventHandler:
     tags:
       - app.websocket_event.handler
+
+  App\EventListener\OrderChangedEventListener:
+    tags:
+      - { name: kernel.event_listener, event: app.order.created, method: 'onOrderChanged' }
+      - { name: kernel.event_listener, event: app.order.updated, method: 'onOrderChanged' }

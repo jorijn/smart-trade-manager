@@ -2,18 +2,15 @@
 
 namespace App\Form\Type;
 
-use App\Model\TakeProfit;
+use App\Model\StopLoss;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
-use Symfony\Component\Form\Extension\Core\Type\PercentType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\GreaterThan;
-use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 
-class TakeProfitType extends AbstractType
+class StoplossType extends AbstractType
 {
     /**
      * {@inheritdoc}
@@ -27,17 +24,7 @@ class TakeProfitType extends AbstractType
                 'required' => true,
                 'constraints' => [
                     new NotBlank(),
-                    new Regex(TradeType::PRICE_REGEX),
-                ],
-            ])
-            ->add('percentage', PercentType::class, [
-                'type' => 'integer',
-                'required' => true,
-                'empty_data' => 0,
-                'constraints' => [
-                    new NotBlank(),
-                    new GreaterThan(1),
-                    new LessThanOrEqual(100)
+                    new Regex(TradeType::PRICE_REGEX.'ss'),
                 ],
             ]);
     }
@@ -45,7 +32,7 @@ class TakeProfitType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => TakeProfit::class,
+            'data_class' => StopLoss::class,
         ]);
     }
 }

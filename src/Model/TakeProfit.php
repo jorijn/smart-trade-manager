@@ -6,24 +6,12 @@ class TakeProfit
 {
     /** @var int|null */
     protected $id;
-    /** @var string|null */
-    protected $quantity;
     /** @var int */
     protected $percentage;
     /** @var string */
     protected $price;
     /** @var Trade */
     protected $trade;
-
-    /**
-     * @param string $price
-     * @param int    $percentage
-     */
-    public function __construct(string $price, int $percentage)
-    {
-        $this->price = $price;
-        $this->percentage = $percentage;
-    }
 
     /**
      * @return int|null
@@ -68,7 +56,7 @@ class TakeProfit
     /**
      * @return int
      */
-    public function getPercentage(): int
+    public function getPercentage(): ?int
     {
         return $this->percentage;
     }
@@ -88,7 +76,7 @@ class TakeProfit
     /**
      * @return string
      */
-    public function getPrice(): string
+    public function getPrice(): ?string
     {
         return $this->price;
     }

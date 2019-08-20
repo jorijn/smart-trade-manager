@@ -2,26 +2,6 @@
 
 namespace App\Event;
 
-use App\Model\Order;
-
-class OrderUpdatedEvent
+class OrderUpdatedEvent extends AbstractOrderEvent
 {
-    /** @var Order */
-    protected $order;
-
-    /**
-     * @param Order $order
-     */
-    public function __construct(Order $order)
-    {
-        $this->order = $order;
-    }
-
-    /**
-     * @return Order
-     */
-    public function getOrder(): Order
-    {
-        return $this->order;
-    }
 }

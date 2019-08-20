@@ -5,7 +5,7 @@ namespace App\Bus\MessageHandler\Query;
 use App\Bus\Message\Query\BuyOrdersQuery;
 use App\Exception\TradeNotFoundException;
 use App\Exception\UnsupportedTradeException;
-use App\Model\Order;
+use App\Model\ExchangeOrder;
 use App\Model\Trade;
 use App\OrderGenerator\BuyOrderGeneratorInterface;
 use App\Repository\TradeRepository;
@@ -43,7 +43,7 @@ class BuyOrdersQueryHandler implements LoggerAwareInterface
     /**
      * @param BuyOrdersQuery $command
      *
-     * @return Order[]
+     * @return ExchangeOrder[]
      */
     public function __invoke(BuyOrdersQuery $command): array
     {

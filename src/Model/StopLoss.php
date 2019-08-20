@@ -12,14 +12,6 @@ class StopLoss
     protected $trade;
 
     /**
-     * @param string $price
-     */
-    public function __construct(string $price)
-    {
-        $this->price = $price;
-    }
-
-    /**
      * @return int|null
      */
     public function getId(): ?int
@@ -42,7 +34,7 @@ class StopLoss
     /**
      * @return string
      */
-    public function getPrice(): string
+    public function getPrice(): ?string
     {
         return $this->price;
     }
@@ -62,7 +54,7 @@ class StopLoss
     /**
      * @return Trade
      */
-    public function getTrade(): Trade
+    public function getTrade(): ?Trade
     {
         return $this->trade;
     }

@@ -76,7 +76,5 @@ class TradeSendOcoCommand extends Command
                 'recvWindow' => 10000,
             ],
         ]);
-
-        dump(json_decode($response->getContent(false)));
     }
 }

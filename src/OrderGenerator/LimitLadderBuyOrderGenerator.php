@@ -3,7 +3,7 @@
 namespace App\OrderGenerator;
 
 use App\Component\ExchangePriceFormatter;
-use App\Model\Order;
+use App\Model\ExchangeOrder;
 use App\Model\Symbol;
 use App\Model\Trade;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -58,12 +58,13 @@ class LimitLadderBuyOrderGenerator extends AbstractBuyOrderGenerator
 
         $orders = [];
         foreach ($ladder as [$quantity, $price]) {
-            $order = new Order();
+            $order = new ExchangeOrder();
             $order->setSymbol($validatedSymbol->getSymbol());
-            $order->setSide(Order::BUY);
+            $order->setSide(ExchangeOrder::BUY);
             $order->setPrice($price);
             $order->setQuantity($quantity);
-            $order->setType(Order::LIMIT);
+            $order->setType(ExchangeOrder::LIMIT);
+            $order->setTrade($trade);
 
             $orders[] = $order;
         }

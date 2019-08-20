@@ -2,15 +2,15 @@
 
 namespace App\Bus\Message\Command;
 
-use App\Model\Order;
+use App\Model\ExchangeOrder;
 
 class CreateExchangeOrdersCommand
 {
-    /** @var Order[] */
+    /** @var ExchangeOrder[] */
     protected $orders = [];
 
     /**
-     * @param Order ...$orders
+     * @param ExchangeOrder ...$orders
      */
     public function __construct(...$orders)
     {
@@ -18,7 +18,7 @@ class CreateExchangeOrdersCommand
     }
 
     /**
-     * @return Order[]
+     * @return ExchangeOrder[]
      */
     public function getOrders(): array
     {

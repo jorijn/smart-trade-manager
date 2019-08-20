@@ -1,18 +1,16 @@
-App\Model\Order:
+App\Model\ExchangeOrder:
   type: entity
   table: exchange_order
-  repositoryClass: App\Repository\OrderRepository
+  repositoryClass: App\Repository\ExchangeOrderRepository
   id:
-    clientOrderId:
-      type: string
+    orderId:
+      type: integer
       generator:
         strategy: NONE
   indexes:
     idx_sdx1:
       columns:
-        - client_order_id
         - status
-        - filled_quantity
   fields:
     symbol:
       type: string
@@ -68,3 +66,27 @@ App\Model\Order:
     updatedAt:
       type: bigint
       nullable: true
+  manyToOne:
+    trade:
+      targetEntity: Trade
+      nullable: false
+      joinColumn:
+        name: trade_id
+        referencedColumnName: id
+        onDelete: CASCADE
+    takeProfit:
+      targetEntity: TakeProfit
+      nullable: true
+      joinColumn:
+        name: take_profit_id
+        referencedColumnName: id
+        onDelete: CASCADE
+  oneToOne:
+    stoploss:
+      targetEntity: StopLoss
+      inversedBy: order
+      nullable: true
+      joinColumn:
+        name: stoploss_id
+        referencedColumnName: id
+        onDelete: CASCADE

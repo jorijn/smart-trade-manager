@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 class Trade
 {
     /** @var int|null */
@@ -18,6 +20,18 @@ class Trade
     protected $entryHigh;
     /** @var TakeProfit[] */
     protected $takeProfits;
+    /** @var bool */
+    protected $active = true;
+    /** @var ExchangeOrder[] */
+    protected $orders;
+
+    /**
+     */
+    public function __construct()
+    {
+        $this->takeProfits = new ArrayCollection();
+        $this->orders = new ArrayCollection();
+    }
 
     /**
      * @return int|null
@@ -42,7 +56,7 @@ class Trade
     /**
      * @return string
      */
-    public function getSymbol(): string
+    public function getSymbol(): ?string
     {
         return $this->symbol;
     }
@@ -62,7 +76,7 @@ class Trade
     /**
      * @return string
      */
-    public function getQuantity(): string
+    public function getQuantity(): ?string
     {
         return $this->quantity;
     }
@@ -102,7 +116,7 @@ class Trade
     /**
      * @return string
      */
-    public function getEntryLow(): string
+    public function getEntryLow(): ?string
     {
         return $this->entryLow;
     }
@@ -140,9 +154,9 @@ class Trade
     }
 
     /**
-     * @return TakeProfit[]
+     * @return TakeProfit[]|ArrayCollection
      */
-    public function getTakeProfits(): array
+    public function getTakeProfits()
     {
         return $this->takeProfits;
     }
@@ -155,6 +169,26 @@ class Trade
     public function setTakeProfits(array $takeProfits): Trade
     {
         $this->takeProfits = $takeProfits;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    /**
+     * @param bool $active
+     *
+     * @return Trade
+     */
+    public function setActive(bool $active): Trade
+    {
+        $this->active = $active;
 
         return $this;
     }

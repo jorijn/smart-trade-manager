@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Order
+class ExchangeOrder
 {
     public const LIMIT = 'LIMIT';
     public const MARKET = 'MARKET';
@@ -34,8 +34,8 @@ class Order
     protected $newOrderRespType = 'FULL';
     /** @var int|null */
     protected $recvWindow = 60000;
-    /** @var string|null */
-    protected $clientOrderId;
+    /** @var int|null */
+    protected $orderId;
     /** @var string|null */
     protected $status;
     /** @var string|null */
@@ -44,6 +44,32 @@ class Order
     protected $updatedAt;
     /** @var string|null */
     protected $filledQuoteQuantity;
+    /** @var Trade */
+    protected $trade;
+    /** @var StopLoss|null */
+    protected $stoploss;
+    /** @var TakeProfit|null */
+    protected $takeProfit;
+
+    /**
+     * @return Trade
+     */
+    public function getTrade(): Trade
+    {
+        return $this->trade;
+    }
+
+    /**
+     * @param Trade $trade
+     *
+     * @return ExchangeOrder
+     */
+    public function setTrade(Trade $trade): ExchangeOrder
+    {
+        $this->trade = $trade;
+
+        return $this;
+    }
 
     /**
      * @return string|null
@@ -56,9 +82,9 @@ class Order
     /**
      * @param string|null $filledQuoteQuantity
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setFilledQuoteQuantity(?string $filledQuoteQuantity): Order
+    public function setFilledQuoteQuantity(?string $filledQuoteQuantity): ExchangeOrder
     {
         $this->filledQuoteQuantity = $filledQuoteQuantity;
 
@@ -76,9 +102,9 @@ class Order
     /**
      * @param int $updatedAt
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setUpdatedAt(int $updatedAt): Order
+    public function setUpdatedAt(int $updatedAt): ExchangeOrder
     {
         $this->updatedAt = $updatedAt;
 
@@ -132,9 +158,9 @@ class Order
     /**
      * @param string $symbol
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setSymbol(string $symbol): Order
+    public function setSymbol(string $symbol): ExchangeOrder
     {
         $this->symbol = $symbol;
 
@@ -152,9 +178,9 @@ class Order
     /**
      * @param string $side
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setSide(string $side): Order
+    public function setSide(string $side): ExchangeOrder
     {
         $this->side = $side;
 
@@ -172,9 +198,9 @@ class Order
     /**
      * @param string $type
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setType(string $type): Order
+    public function setType(string $type): ExchangeOrder
     {
         $this->type = $type;
 
@@ -192,9 +218,9 @@ class Order
     /**
      * @param string|null $timeInForce
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setTimeInForce(?string $timeInForce): Order
+    public function setTimeInForce(?string $timeInForce): ExchangeOrder
     {
         $this->timeInForce = $timeInForce;
 
@@ -212,9 +238,9 @@ class Order
     /**
      * @param string $quantity
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setQuantity(string $quantity): Order
+    public function setQuantity(string $quantity): ExchangeOrder
     {
         $this->quantity = $quantity;
 
@@ -232,9 +258,9 @@ class Order
     /**
      * @param string $price
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setPrice(string $price): Order
+    public function setPrice(string $price): ExchangeOrder
     {
         $this->price = $price;
 
@@ -252,9 +278,9 @@ class Order
     /**
      * @param string|null $stopPrice
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setStopPrice(?string $stopPrice): Order
+    public function setStopPrice(?string $stopPrice): ExchangeOrder
     {
         $this->stopPrice = $stopPrice;
 
@@ -272,9 +298,9 @@ class Order
     /**
      * @param string|null $icebergQty
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setIcebergQty(?string $icebergQty): Order
+    public function setIcebergQty(?string $icebergQty): ExchangeOrder
     {
         $this->icebergQty = $icebergQty;
 
@@ -292,9 +318,9 @@ class Order
     /**
      * @param string|null $newOrderRespType
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setNewOrderRespType(?string $newOrderRespType): Order
+    public function setNewOrderRespType(?string $newOrderRespType): ExchangeOrder
     {
         $this->newOrderRespType = $newOrderRespType;
 
@@ -312,9 +338,9 @@ class Order
     /**
      * @param int|null $recvWindow
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setRecvWindow(?int $recvWindow): Order
+    public function setRecvWindow(?int $recvWindow): ExchangeOrder
     {
         $this->recvWindow = $recvWindow;
 
@@ -324,19 +350,19 @@ class Order
     /**
      * @return string|null
      */
-    public function getClientOrderId(): string
+    public function getOrderId(): string
     {
-        return $this->clientOrderId;
+        return $this->orderId;
     }
 
     /**
-     * @param string|null $clientOrderId
+     * @param string|null $orderId
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setClientOrderId(string $clientOrderId): Order
+    public function setOrderId(string $orderId): ExchangeOrder
     {
-        $this->clientOrderId = $clientOrderId;
+        $this->orderId = $orderId;
 
         return $this;
     }
@@ -352,9 +378,9 @@ class Order
     /**
      * @param string|null $status
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setStatus(?string $status): Order
+    public function setStatus(?string $status): ExchangeOrder
     {
         $this->status = $status;
 
@@ -372,9 +398,9 @@ class Order
     /**
      * @param string|null $filledQuantity
      *
-     * @return Order
+     * @return ExchangeOrder
      */
-    public function setFilledQuantity(?string $filledQuantity): Order
+    public function setFilledQuantity(?string $filledQuantity): ExchangeOrder
     {
         $this->filledQuantity = $filledQuantity;
 

@@ -4,8 +4,14 @@ framework:
     # failure_transport: failed
 
     transports:
-      async: '%env(MESSENGER_TRANSPORT_DSN)%'
-      sync: 'sync://'
+      async:
+        dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+        retry_strategy:
+          max_retries: 0
+      sync:
+        dsn: 'sync://'
+        retry_strategy:
+          max_retries: 0
 
     routing:
       'App\Bus\Message\AsyncMessageInterface': async
@@ -16,6 +22,7 @@ framework:
         middleware:
           - validation
           - doctrine_transaction
+          - doctrine_ping_connection
       query.bus:
         middleware:
           - validation
@@ -23,3 +30,4 @@ framework:
         default_middleware: allow_no_handlers
         middleware:
           - validation
+          - doctrine_ping_connection

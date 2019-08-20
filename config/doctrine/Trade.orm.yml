@@ -24,6 +24,9 @@ App\Model\Trade:
       precision: 27
       scale: 18
       nullable: true
+    active:
+      type: boolean
+      default: 0
   oneToOne:
     stoploss:
       targetEntity: StopLoss
@@ -31,5 +34,9 @@ App\Model\Trade:
   oneToMany:
     takeProfits:
       targetEntity: TakeProfit
+      mappedBy: trade
+      cascade: ["persist", "merge"]
+    orders:
+      targetEntity: ExchangeOrder
       mappedBy: trade
       cascade: ["persist", "merge"]

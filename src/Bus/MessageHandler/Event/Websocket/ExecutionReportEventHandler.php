@@ -4,7 +4,7 @@ namespace App\Bus\MessageHandler\Event\Websocket;
 
 use App\Bus\Message\Event\WebsocketEvent;
 use App\Event\OrderUpdatedEvent;
-use App\Model\Order;
+use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -35,9 +35,9 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
     public function handle(WebsocketEvent $event): void
     {
         $payload = $event->getPayload();
-        $order = $this->manager->getRepository(Order::class)->findOneByClientOrderId($payload['c']);
+        $order = $this->manager->getRepository(ExchangeOrder::class)->findOneByOrderId($payload['i']);
 
-        if (!$order instanceof Order) {
+        if (!$order instanceof ExchangeOrder) {
             $this->logger->notice('received execution report for unknown order', [
                 'payload' => $payload,
             ]);
