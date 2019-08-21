@@ -6,11 +6,16 @@ use App\Bus\Message\Command\EvaluatePositionsCommand;
 use App\Event\AbstractOrderEvent;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 
-class OrderChangedEventListener
+class OrderChangedEventListener implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /** @var CacheItemPoolInterface */
     protected $pool;
     /** @var MessageBusInterface */
@@ -19,11 +24,14 @@ class OrderChangedEventListener
     /**
      * @param MessageBusInterface    $commandBus
      * @param CacheItemPoolInterface $pool
+     * @param LoggerInterface        $logger
      */
-    public function __construct(MessageBusInterface $commandBus, CacheItemPoolInterface $pool)
+    public function __construct(MessageBusInterface $commandBus, CacheItemPoolInterface $pool, LoggerInterface $logger)
     {
         $this->pool = $pool;
         $this->commandBus = $commandBus;
+
+        $this->setLogger($logger);
     }
 
     /**
@@ -42,9 +50,14 @@ class OrderChangedEventListener
 
         $this->pool->save($item);
 
-        // dispatch it to the queue and set it to be executed in 5 seconds
+        $this->logger->info(
+            'order update event received, triggering evaluation of positions',
+            ['order' => $event->getOrder()]
+        );
+
+        // dispatch it to the queue and set it to be executed in 10 seconds
         $this->commandBus->dispatch($command, [
-            new DelayStamp(5000),
+            new DelayStamp(10000),
         ]);
     }
 }

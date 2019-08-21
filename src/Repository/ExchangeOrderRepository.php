@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Model\ExchangeOrder;
 use App\Model\TakeProfit;
 use App\Model\Trade;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 
@@ -64,6 +65,22 @@ class ExchangeOrderRepository extends EntityRepository
 
         $qb->setParameter('allowedStatus', self::ALLOWED_ORDER_STATUS, Connection::PARAM_STR_ARRAY);
         $qb->setParameter('trade', $trade);
+
+        return $qb->getQuery()->execute();
+    }
+
+    /**
+     * @return array|Collection
+     */
+    public function getSymbolsWithPendingOrders()
+    {
+        $qb = $this->createQueryBuilder('eo');
+        $qb
+            ->select('MIN(eo.orderId) AS oldest_order', 'eo.symbol')
+            ->where('eo.status IN (:status)')
+            ->groupBy('eo.symbol');
+
+        $qb->setParameter('status', ['NEW', 'PARTIALLY_FILLED'], Connection::PARAM_STR_ARRAY);
 
         return $qb->getQuery()->execute();
     }

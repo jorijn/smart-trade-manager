@@ -81,9 +81,6 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
             $order->setQuantity($result['origQty']);
             $order->setFilledQuantity($result['executedQty'] ?? null);
             $order->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
-            $order->setTimeInForce($result['timeInForce']);
-            $order->setType($result['type']);
-            $order->setSide($result['side']);
 
             $this->manager->persist($order);
 

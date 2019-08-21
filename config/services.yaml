@@ -27,6 +27,8 @@ services:
       - "@binance_api.client"
       - "@property_accessor"
       - "@event.bus"
+      - "@command.bus"
+      - "@logger"
     tags:
       - { name: console.command }
 
@@ -69,6 +71,20 @@ services:
           name: messenger.message_handler,
           bus: command.bus,
           handles: App\Bus\Message\Command\EvaluatePositionsCommand,
+        }
+
+  app.bus.message_handler.command.synchronize_order_history:
+    class: App\Bus\MessageHandler\Command\SynchronizeOrderHistoryHandler
+    arguments:
+      - "@logger"
+      - "@doctrine.orm.default_entity_manager"
+      - "@binance_api.client"
+      - "@event_dispatcher"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: command.bus,
+          handles: App\Bus\Message\Command\SynchronizeOrderHistoryCommand,
         }
 
   app.bus.message_handler.query.buy_orders:
@@ -193,15 +209,16 @@ services:
     arguments:
       - "@command.bus"
       - "@cache.app"
+      - "@logger"
     tags:
       - {
           name: kernel.event_listener,
-          event: app.order.created,
+          event: App\Event\OrderUpdatedEvent,
           method: "onOrderChanged",
         }
       - {
           name: kernel.event_listener,
-          event: app.order.updated,
+          event: App\Event\OrderCreatedEvent,
           method: "onOrderChanged",
         }
 

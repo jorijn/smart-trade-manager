@@ -4,9 +4,11 @@ namespace App\Command;
 
 use Amp\Loop;
 use Amp\Websocket;
+use App\Bus\Message\Command\SynchronizeOrderHistoryCommand;
 use App\Bus\Message\Event\WebsocketEvent;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,23 +31,31 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
     protected $connection;
     /** @var MessageBusInterface */
     protected $eventBus;
+    /** @var MessageBusInterface */
+    protected $commandBus;
 
     /**
      * @param string                    $name
      * @param HttpClientInterface       $binanceApiClient
      * @param PropertyAccessorInterface $accessor
      * @param MessageBusInterface       $eventBus
+     * @param MessageBusInterface       $commandBus
      */
     public function __construct(
         string $name,
         HttpClientInterface $binanceApiClient,
         PropertyAccessorInterface $accessor,
-        MessageBusInterface $eventBus
+        MessageBusInterface $eventBus,
+        MessageBusInterface $commandBus,
+        LoggerInterface $logger
     ) {
         parent::__construct($name);
         $this->httpClient = $binanceApiClient;
         $this->accessor = $accessor;
         $this->eventBus = $eventBus;
+        $this->commandBus = $commandBus;
+
+        $this->setLogger($logger);
     }
 
     public function handleKillSignal(): void
@@ -74,8 +84,8 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
         pcntl_signal(SIGINT, [$this, 'handleKillSignal']);
         pcntl_signal(SIGTERM, [$this, 'handleKillSignal']);
 
-        // TODO do sync before starting
-        // [...]
+        // sync before starting
+        $this->commandBus->dispatch(new SynchronizeOrderHistoryCommand());
 
         // get listener key to connect to websocket
         $response = $this->httpClient->request(

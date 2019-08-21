@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Bus\MessageHandler\Command;
+
+use App\Bus\Message\Command\SynchronizeOrderHistoryCommand;
+use App\Event\OrderUpdatedEvent;
+use App\Exception\BinanceApiException;
+use App\Model\ExchangeOrder;
+use Doctrine\Common\Persistence\ObjectManager;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
+{
+    use LoggerAwareTrait;
+
+    /** @var ObjectManager */
+    protected $manager;
+    /** @var HttpClientInterface */
+    protected $binanceApi;
+    /** @var EventDispatcherInterface */
+    protected $dispatcher;
+
+    /**
+     * @param LoggerInterface          $logger
+     * @param ObjectManager            $manager
+     * @param HttpClientInterface      $binanceApi
+     * @param EventDispatcherInterface $dispatcher
+     */
+    public function __construct(
+        LoggerInterface $logger,
+        ObjectManager $manager,
+        HttpClientInterface $binanceApi,
+        EventDispatcherInterface $dispatcher
+    ) {
+        $this->manager = $manager;
+        $this->binanceApi = $binanceApi;
+        $this->dispatcher = $dispatcher;
+
+        $this->setLogger($logger);
+    }
+
+    /**
+     * @param SynchronizeOrderHistoryCommand $command
+     *
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function __invoke(SynchronizeOrderHistoryCommand $command)
+    {
+        $symbols = $this->manager->getRepository(ExchangeOrder::class)->getSymbolsWithPendingOrders();
+        foreach ($symbols as $symbol) {
+            $exchangeData = array_reduce(
+                $this->getExchangeStatus($symbol),
+                static function (array $orders, array $order) {
+                    $orders[(string) $order['orderId']] = $order;
+
+                    return $orders;
+                },
+                []
+            );
+
+            $ordersToBeUpdated = $this->manager
+                ->getRepository(ExchangeOrder::class)
+                ->findBy(['orderId' => array_keys($exchangeData)]);
+
+            foreach ($ordersToBeUpdated as $order) {
+                $data = $exchangeData[$order->getOrderId()];
+                if ($data['updateTime'] <= $order->getUpdatedAt()) {
+                    $this->logger->debug('received order info but local copy is more recent, ignoring', $data);
+                    continue;
+                }
+
+                $order->setUpdatedAt($data['updateTime']);
+                $order->setStatus($data['status']);
+                $order->setFilledQuantity($data['executedQty'] ?? null);
+                $order->setFilledQuoteQuantity($data['cummulativeQuoteQty'] ?? null);
+
+                $this->manager->persist($order);
+                $this->logger->info('updated order info from exchange', $data);
+                $this->dispatcher->dispatch(new OrderUpdatedEvent($order));
+            }
+
+            $this->manager->flush();
+        }
+    }
+
+    /**
+     * @param array $pair
+     *
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     *
+     * @return array of orders
+     */
+    protected function getExchangeStatus(array $pair): array
+    {
+        ['symbol' => $symbol, 'oldest_order' => $oldestId] = $pair;
+        $this->logger->debug(sprintf('symbol %s has pending orders, fetching status from exchange', $symbol), [
+            'symbol' => $symbol,
+            'oldest_order' => $oldestId,
+        ]);
+
+        $response = $this->binanceApi->request('GET', 'v3/allOrders', [
+            'extra' => ['security_type' => 'USER_DATA'],
+            'body' => [
+                'symbol' => $symbol,
+                'orderId' => $oldestId,
+                'limit' => 1000,
+            ],
+        ])->toArray(false);
+
+        // TODO maybe create a listener for this? -> extract logic
+        if (isset($response['code'])) {
+            throw new BinanceApiException($response['msg'], $response['code']);
+        }
+
+        return $response;
+    }
+}
