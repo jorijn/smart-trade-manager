@@ -42,25 +42,34 @@ services:
       - { name: console.command }
 
   # COMMANDBUS CONFIGURATION
-  command_handlers:
-    namespace: App\Bus\MessageHandler\Command\
-    resource: "%kernel.project_dir%/src/Bus/MessageHandler/Command/*Handler.php"
+  app.bus.message_handler.command.create_exchange_orders:
+    class: App\Bus\MessageHandler\Command\CreateExchangeOrdersHandler
+    arguments:
+      - "@binance_api.client"
+      - "@logger"
+      - "@doctrine.orm.entity_manager"
+      - "@event_dispatcher"
     tags:
-      - { name: messenger.message_handler, bus: command.bus }
+      - {
+          name: messenger.message_handler,
+          bus: command.bus,
+          handles: App\Bus\Message\Command\CreateExchangeOrdersCommand,
+        }
 
-  query_handlers:
-    namespace: App\Bus\MessageHandler\Query\
-    resource: "%kernel.project_dir%/src/Bus/MessageHandler/Query/*QueryHandler.php"
-    autoconfigure: false
+  app.bus.message_handler.command.evaluate_positions:
+    class: App\Bus\MessageHandler\Command\EvaluatePositionsHandler
+    arguments:
+      - "@cache.app"
+      - "@logger"
+      - "@doctrine.orm.default_entity_manager"
+      - "@app.component.exchange_price_formatter"
+      - "@binance_api.client"
     tags:
-      - { name: messenger.message_handler, bus: query.bus }
-
-  event_handlers:
-    namespace: App\Bus\MessageHandler\Event\
-    resource: "%kernel.project_dir%/src/Bus/MessageHandler/Event/*EventHandler.php"
-    autoconfigure: false
-    tags:
-      - { name: messenger.message_handler, bus: event.bus }
+      - {
+          name: messenger.message_handler,
+          bus: command.bus,
+          handles: App\Bus\Message\Command\EvaluatePositionsCommand,
+        }
 
   app.bus.message_handler.query.buy_orders:
     class: App\Bus\MessageHandler\Query\OrderQueryHandler
@@ -93,7 +102,11 @@ services:
     arguments:
       - !tagged app.websocket_event.handler
     tags:
-      - { name: messenger.message_handler, bus: event.bus }
+      - {
+          name: messenger.message_handler,
+          bus: event.bus,
+          handles: App\Bus\Message\Event\WebsocketEvent,
+        }
 
   app.bus.message_handler.event.websocket.outbound_account_position:
     class: App\Bus\MessageHandler\Event\Websocket\OutboundAccountPositionEventHandler
