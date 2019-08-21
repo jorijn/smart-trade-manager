@@ -40,6 +40,7 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
      * @param PropertyAccessorInterface $accessor
      * @param MessageBusInterface       $eventBus
      * @param MessageBusInterface       $commandBus
+     * @param LoggerInterface           $logger
      */
     public function __construct(
         string $name,
