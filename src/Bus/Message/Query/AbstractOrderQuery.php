@@ -2,7 +2,7 @@
 
 namespace App\Bus\Message\Query;
 
-class BuyOrdersQuery
+abstract class AbstractOrderQuery
 {
     /** @var int */
     protected $tradeId;

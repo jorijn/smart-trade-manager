@@ -11,10 +11,9 @@ use App\Model\Trade;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 
-abstract class AbstractBuyOrderGenerator implements BuyOrderGeneratorInterface, LoggerAwareInterface
+abstract class AbstractOrderGenerator implements OrderGeneratorInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -26,14 +25,11 @@ abstract class AbstractBuyOrderGenerator implements BuyOrderGeneratorInterface, 
     /**
      * @param ExchangePriceFormatter $formatter
      * @param ObjectManager          $manager
-     * @param LoggerInterface        $logger
      */
-    public function __construct(ExchangePriceFormatter $formatter, ObjectManager $manager, LoggerInterface $logger)
+    public function __construct(ExchangePriceFormatter $formatter, ObjectManager $manager)
     {
         $this->formatter = $formatter;
         $this->manager = $manager;
-
-        $this->setLogger($logger);
     }
 
     /**

@@ -37,7 +37,7 @@ class TakeProfitType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                     new GreaterThan(1),
-                    new LessThanOrEqual(100)
+                    new LessThanOrEqual(100),
                 ],
             ]);
     }

@@ -25,8 +25,6 @@ class Trade
     /** @var ExchangeOrder[] */
     protected $orders;
 
-    /**
-     */
     public function __construct()
     {
         $this->takeProfits = new ArrayCollection();

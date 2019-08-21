@@ -7,9 +7,8 @@ use App\Model\ExchangeOrder;
 use App\Model\Symbol;
 use App\Model\Trade;
 use Doctrine\Common\Persistence\ObjectManager;
-use Psr\Log\LoggerInterface;
 
-class LimitLadderBuyOrderGenerator extends AbstractBuyOrderGenerator
+class LimitLadderBuyOrderGenerator extends AbstractOrderGenerator
 {
     /** @var int */
     protected $ladderSize;
@@ -17,16 +16,14 @@ class LimitLadderBuyOrderGenerator extends AbstractBuyOrderGenerator
     /**
      * @param ExchangePriceFormatter $formatter
      * @param ObjectManager          $manager
-     * @param LoggerInterface        $logger
      * @param int                    $ladderSize
      */
     public function __construct(
         ExchangePriceFormatter $formatter,
         ObjectManager $manager,
-        LoggerInterface $logger,
         int $ladderSize
     ) {
-        parent::__construct($formatter, $manager, $logger);
+        parent::__construct($formatter, $manager);
 
         $this->ladderSize = $ladderSize;
     }

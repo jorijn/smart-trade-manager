@@ -4,7 +4,7 @@ namespace App\OrderGenerator;
 
 use App\Model\Trade;
 
-interface BuyOrderGeneratorInterface
+interface OrderGeneratorInterface
 {
     /**
      * @param Trade $trade

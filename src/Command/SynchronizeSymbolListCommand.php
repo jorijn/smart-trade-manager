@@ -16,18 +16,16 @@ class SynchronizeSymbolListCommand extends Command
 {
     use HandleTrait;
 
-    /** @var string */
-    protected static $defaultName = 'exchange:binance:synchronize-symbol-list';
     /** @var EntityManagerInterface */
     protected $entityManager;
 
     /**
-     * @param string|null            $name
+     * @param string                 $name
      * @param MessageBusInterface    $queryBus
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(
-        string $name = null,
+        string $name,
         MessageBusInterface $queryBus,
         EntityManagerInterface $entityManager
     ) {

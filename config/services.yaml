@@ -1,90 +1,198 @@
 parameters:
 
 services:
-  _defaults:
-    autowire: true
-    autoconfigure: true
+  # COMMAND CONFIGURATION
+  app.command.evaluate_positions_force:
+    class: App\Command\EvaluatePositionsForceCommand
+    arguments:
+      - "app:evaluate-positions:force"
+      - "@command.bus"
+      - "@cache.app"
+    tags:
+      - { name: console.command }
 
-  App\:
-    resource: '../src/*'
-    exclude: '../src/{Bus,DependencyInjection,Model,Migrations,Tests,Kernel.php}'
+  app.command.synchronize_symbol_list:
+    class: App\Command\SynchronizeSymbolListCommand
+    arguments:
+      - "app:exchange:synchronize-symbol-list"
+      - "@query.bus"
+      - "@doctrine.orm.entity_manager"
+    tags:
+      - { name: console.command }
 
+  app.command.user_stream_process:
+    class: App\Command\UserStreamProcessCommand
+    arguments:
+      - "app:user-stream:process"
+      - "@binance_api.client"
+      - "@property_accessor"
+      - "@event.bus"
+    tags:
+      - { name: console.command }
+
+  app.command.test:
+    class: App\Command\TestCommand
+    arguments:
+      - "app:test"
+      - "@doctrine.orm.entity_manager"
+      - "@query.bus"
+      - "@command.bus"
+      - "@form.factory"
+    tags:
+      - { name: console.command }
+
+  # COMMANDBUS CONFIGURATION
   command_handlers:
     namespace: App\Bus\MessageHandler\Command\
-    resource: '%kernel.project_dir%/src/Bus/MessageHandler/Command/*Handler.php'
-    autoconfigure: false
+    resource: "%kernel.project_dir%/src/Bus/MessageHandler/Command/*Handler.php"
     tags:
       - { name: messenger.message_handler, bus: command.bus }
 
   query_handlers:
     namespace: App\Bus\MessageHandler\Query\
-    resource: '%kernel.project_dir%/src/Bus/MessageHandler/Query/*QueryHandler.php'
+    resource: "%kernel.project_dir%/src/Bus/MessageHandler/Query/*QueryHandler.php"
     autoconfigure: false
     tags:
       - { name: messenger.message_handler, bus: query.bus }
 
   event_handlers:
     namespace: App\Bus\MessageHandler\Event\
-    resource: '%kernel.project_dir%/src/Bus/MessageHandler/Event/*EventHandler.php'
+    resource: "%kernel.project_dir%/src/Bus/MessageHandler/Event/*EventHandler.php"
     autoconfigure: false
     tags:
       - { name: messenger.message_handler, bus: event.bus }
 
-  App\Controller\:
-    resource: '../src/Controller'
-    tags: ['controller.service_arguments']
-
-  App\Decorator\ApiCredentialsHttpClientDecorator:
-    decorates: binance_api.client
-    decoration_priority: 5
+  app.bus.message_handler.query.buy_orders:
+    class: App\Bus\MessageHandler\Query\OrderQueryHandler
     arguments:
-      - '@App\Decorator\ApiCredentialsHttpClientDecorator.inner'
-      - '%app.config.exchange.api_key%'
-      - '%app.config.exchange.api_secret%'
-
-  App\Decorator\VerboseHttpClientDecorator:
-    decorates: binance_api.client
-    decoration_priority: 10
-    arguments:
-      - '@App\Decorator\VerboseHttpClientDecorator.inner'
-      - '%app.config.exchange.api_debugging_enabled%'
-
-  App\Bus\MessageHandler\Query\BuyOrdersQueryHandler:
-    arguments:
-      - '@doctrine.orm.entity_manager'
+      - "@doctrine.orm.entity_manager"
       - !tagged app.order_generator.buy
-      - '@monolog.logger'
+      - "@logger"
     tags:
-      - { name: messenger.message_handler, bus: query.bus }
+      - {
+          name: messenger.message_handler,
+          bus: query.bus,
+          handles: App\Bus\Message\Query\BuyOrderQuery,
+        }
 
-  App\Bus\MessageHandler\Event\WebsocketEventHandler:
+  app.bus.message_handler.query.sell_orders:
+    class: App\Bus\MessageHandler\Query\OrderQueryHandler
+    arguments:
+      - "@doctrine.orm.entity_manager"
+      - !tagged app.order_generator.sell
+      - "@logger"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: query.bus,
+          handles: App\Bus\Message\Query\SellOrderQuery,
+        }
+
+  app.bus.message_handler.event.websocket:
+    class: App\Bus\MessageHandler\Event\WebsocketEventHandler
     arguments:
       - !tagged app.websocket_event.handler
     tags:
       - { name: messenger.message_handler, bus: event.bus }
 
-  App\OrderGenerator\LimitLadderBuyOrderGenerator:
+  app.bus.message_handler.event.websocket.outbound_account_position:
+    class: App\Bus\MessageHandler\Event\Websocket\OutboundAccountPositionEventHandler
+    tags:
+      - app.websocket_event.handler
+
+  app.bus.message_handler.event.websocket.execution_report:
+    class: App\Bus\MessageHandler\Event\Websocket\ExecutionReportEventHandler
     arguments:
-      - '@App\Component\ExchangePriceFormatter'
-      - '@doctrine.orm.entity_manager'
-      - '@Psr\Log\LoggerInterface'
-      - '%app.config.exchange.ladder_size%'
-    tags:
-      - { name: 'app.order_generator.buy', priority: 10 }
-
-  App\OrderGenerator\LimitBuyOrderGenerator:
-    tags:
-      - { name: 'app.order_generator.buy', priority: 0 }
-
-  App\Bus\MessageHandler\Event\Websocket\OutboundAccountPositionEventHandler:
+      - "@doctrine.orm.entity_manager"
+      - "@event_dispatcher"
     tags:
       - app.websocket_event.handler
 
-  App\Bus\MessageHandler\Event\Websocket\ExecutionReportEventHandler:
-    tags:
-      - app.websocket_event.handler
+  # CONTROLLER CONFIGURATION
+  App\Controller\:
+    resource: "../src/Controller"
+    tags: ["controller.service_arguments"]
 
-  App\EventListener\OrderChangedEventListener:
+  # DECORATOR CONFIGURATION
+  app.decorator.api_credentials_http_client:
+    class: App\Decorator\ApiCredentialsHttpClientDecorator
+    decorates: binance_api.client
+    decoration_priority: 5
+    arguments:
+      - "@app.decorator.api_credentials_http_client.inner"
+      - "%app.config.exchange.api_key%"
+      - "%app.config.exchange.api_secret%"
+
+  app.decorator.verbose_http_client:
+    class: App\Decorator\VerboseHttpClientDecorator
+    decorates: binance_api.client
+    decoration_priority: 10
+    arguments:
+      - "@app.decorator.verbose_http_client.inner"
+      - "%app.config.exchange.api_debugging_enabled%"
+
+  # ORDER GENERATOR CONFIGURATION
+  app.order_generator.abstract:
+    class: App\OrderGenerator\AbstractOrderGenerator
+    abstract: true
+    arguments:
+      - "@app.component.exchange_price_formatter"
+      - "@doctrine.orm.entity_manager"
+    calls:
+      - [setLogger, ["@logger"]]
+
+  app.order_generator.limit_ladder_buy:
+    class: App\OrderGenerator\LimitLadderBuyOrderGenerator
+    parent: app.order_generator.abstract
+    arguments:
+      - "%app.config.exchange.ladder_size%"
     tags:
-      - { name: kernel.event_listener, event: app.order.created, method: 'onOrderChanged' }
-      - { name: kernel.event_listener, event: app.order.updated, method: 'onOrderChanged' }
+      - { name: "app.order_generator.buy", priority: 100 }
+
+  app.order_generator.limit_buy:
+    class: App\OrderGenerator\LimitBuyOrderGenerator
+    parent: app.order_generator.abstract
+    autowire: false
+    tags:
+      - { name: "app.order_generator.buy", priority: 0 }
+
+  app.order_generator.oco_sell:
+    class: App\OrderGenerator\OcoSellOrderGenerator
+    parent: app.order_generator.abstract
+    tags:
+      - { name: "app.order_generator.sell", priority: 100 }
+
+  app.order_generator.stop_limit_loss:
+    class: App\OrderGenerator\StopLimitLossOrderGenerator
+    parent: app.order_generator.abstract
+    tags:
+      - { name: "app.order_generator.sell", priority: 50 }
+
+  app.order_generator.take_profit_sell:
+    class: App\OrderGenerator\TakeProfitSellOrderGenerator
+    parent: app.order_generator.abstract
+    tags:
+      - { name: "app.order_generator.sell", priority: 50 }
+
+  # EVENT LISTENER CONFIGURATION
+  app.event_listener.order_changed:
+    class: App\EventListener\OrderChangedEventListener
+    arguments:
+      - "@command.bus"
+      - "@cache.app"
+    tags:
+      - {
+          name: kernel.event_listener,
+          event: app.order.created,
+          method: "onOrderChanged",
+        }
+      - {
+          name: kernel.event_listener,
+          event: app.order.updated,
+          method: "onOrderChanged",
+        }
+
+  app.component.exchange_price_formatter:
+    class: App\Component\ExchangePriceFormatter
+    arguments:
+      - "@logger"

@@ -31,13 +31,13 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
     protected $eventBus;
 
     /**
-     * @param string|null               $name
+     * @param string                    $name
      * @param HttpClientInterface       $binanceApiClient
      * @param PropertyAccessorInterface $accessor
      * @param MessageBusInterface       $eventBus
      */
     public function __construct(
-        string $name = null,
+        string $name,
         HttpClientInterface $binanceApiClient,
         PropertyAccessorInterface $accessor,
         MessageBusInterface $eventBus

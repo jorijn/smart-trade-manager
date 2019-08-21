@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Model\Trade;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 

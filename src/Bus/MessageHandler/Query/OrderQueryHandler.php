@@ -2,12 +2,13 @@
 
 namespace App\Bus\MessageHandler\Query;
 
-use App\Bus\Message\Query\BuyOrdersQuery;
+use App\Bus\Message\Query\AbstractOrderQuery;
+use App\Bus\Message\Query\BuyOrderQuery;
 use App\Exception\TradeNotFoundException;
 use App\Exception\UnsupportedTradeException;
 use App\Model\ExchangeOrder;
 use App\Model\Trade;
-use App\OrderGenerator\BuyOrderGeneratorInterface;
+use App\OrderGenerator\OrderGeneratorInterface;
 use App\Repository\TradeRepository;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\Common\Persistence\ObjectRepository;
@@ -15,21 +16,21 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 
-class BuyOrdersQueryHandler implements LoggerAwareInterface
+class OrderQueryHandler implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
     /** @var ObjectManager */
     protected $manager;
-    /** @var BuyOrderGeneratorInterface[] */
+    /** @var OrderGeneratorInterface[] */
     protected $orderGenerators;
     /** @var TradeRepository|ObjectRepository */
     protected $tradeRepository;
 
     /**
-     * @param ObjectManager                         $manager
-     * @param BuyOrderGeneratorInterface[]|iterable $orderGenerators
-     * @param LoggerInterface                       $logger
+     * @param ObjectManager                      $manager
+     * @param OrderGeneratorInterface[]|iterable $orderGenerators
+     * @param LoggerInterface                    $logger
      */
     public function __construct(ObjectManager $manager, iterable $orderGenerators, LoggerInterface $logger)
     {
@@ -41,16 +42,16 @@ class BuyOrdersQueryHandler implements LoggerAwareInterface
     }
 
     /**
-     * @param BuyOrdersQuery $command
+     * @param BuyOrderQuery $command
      *
      * @return ExchangeOrder[]
      */
-    public function __invoke(BuyOrdersQuery $command): array
+    public function __invoke(AbstractOrderQuery $command): array
     {
         $tradeId = $command->getTradeId();
         $trade = $this->tradeRepository->find($tradeId);
         if (!$trade instanceof Trade) {
-            $this->logger->error('unable to generate buy orders, trade not found', ['trade_id' => $tradeId]);
+            $this->logger->error('unable to generate orders, trade not found', ['trade_id' => $tradeId]);
 
             throw new TradeNotFoundException(sprintf('trade with ID %s not found', $tradeId));
         }
@@ -64,11 +65,11 @@ class BuyOrdersQueryHandler implements LoggerAwareInterface
         $this->logger->critical('no suitable generator found for buy order', [
             'trade_id' => $tradeId,
             'trade' => $trade,
-            'generators' => array_map(static function (BuyOrderGeneratorInterface $generator) {
+            'generators' => array_map(static function (OrderGeneratorInterface $generator) {
                 return get_class($generator);
             }, iterator_to_array($this->orderGenerators)),
         ]);
 
-        throw new UnsupportedTradeException('no suitable generator found for buy order');
+        throw new UnsupportedTradeException('no suitable generator found for order');
     }
 }

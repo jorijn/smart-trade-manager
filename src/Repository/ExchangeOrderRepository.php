@@ -28,7 +28,6 @@ class ExchangeOrderRepository extends EntityRepository
 
     /**
      * @param TakeProfit[] $takeProfits
-     *
      * @param array        $allowedOrderStatus
      *
      * @return mixed

@@ -2,7 +2,6 @@
 
 namespace App\Form\Type;
 
-use App\Model\StopLoss;
 use App\Model\Symbol;
 use App\Model\Trade;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -86,7 +85,7 @@ class TradeType extends AbstractType
                 'constraints' => [
                     new Positive(),
                     new Regex(self::PRICE_REGEX),
-                    new Callback(static function($object, ExecutionContextInterface $context) {
+                    new Callback(static function ($object, ExecutionContextInterface $context) {
                         /** @var FormBuilderInterface $root */
                         $root = $context->getRoot();
                         /** @var Trade $data */
@@ -95,7 +94,7 @@ class TradeType extends AbstractType
                         if ($object <= $data->getEntryLow()) {
                             $context->addViolation('entryHigh needs to be higher than entryLow');
                         }
-                    })
+                    }),
                 ],
             ])
             ->add('takeProfits', CollectionType::class, [
