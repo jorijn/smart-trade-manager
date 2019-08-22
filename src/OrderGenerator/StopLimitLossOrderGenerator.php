@@ -25,6 +25,6 @@ class StopLimitLossOrderGenerator extends AbstractOrderGenerator
      */
     protected function execute(Trade $trade, Symbol $validatedSymbol): array
     {
-        // TODO: Implement execute() method.
+        return [];
     }
 }

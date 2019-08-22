@@ -53,16 +53,15 @@ class TestCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $in = [
-            'entryLow' => '8500',
-            'entryHigh' => '8600',
+            'entryLow' => '8000',
+            'entryHigh' => '9000',
             'symbol' => 'BTCUSDT',
-            'quantity' => 100,
-//            'stoploss' => '7000',
-//            'takeProfits' => [
-//                ['price' => '13000', 'percentage' => '50'],
-//                ['price' => '14000', 'percentage' => '25'],
-//                ['price' => '15000', 'percentage' => '25'],
-//            ],
+            'quantity' => 30,
+            'stoploss' => '9700',
+            'takeProfits' => [
+                ['price' => '13000', 'percentage' => '50'],
+                ['price' => '14000', 'percentage' => '50'],
+            ],
         ];
 
         // disclaimer: ugly, this is to test some app logic

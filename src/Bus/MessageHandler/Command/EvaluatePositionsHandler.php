@@ -4,7 +4,6 @@ namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\CreateExchangeOrdersCommand;
 use App\Bus\Message\Command\EvaluatePositionsCommand;
-use App\Bus\Message\Query\BuyOrderQuery;
 use App\Bus\Message\Query\SellOrderQuery;
 use App\Component\ExchangePriceFormatter;
 use App\Model\ExchangeOrder;
@@ -19,12 +18,14 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\HandleTrait;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class EvaluatePositionsHandler implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
+    use HandleTrait;
 
     /** @var CacheItemPoolInterface */
     protected $pool;
@@ -40,8 +41,6 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
     protected $orderRepository;
     /** @var SymbolRepository|ObjectRepository */
     protected $symbolRepository;
-    /** @var MessageBusInterface */
-    protected $queryBus;
     /** @var MessageBusInterface */
     protected $commandBus;
 
@@ -67,7 +66,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
         $this->manager = $manager;
         $this->formatter = $formatter;
         $this->binanceApiClient = $binanceApiClient;
-        $this->queryBus = $queryBus;
+        $this->messageBus = $queryBus;
         $this->commandBus = $commandBus;
         $this->setLogger($logger);
 
@@ -98,9 +97,44 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
 
             // determine type of type
             if (count($trade->getTakeProfits()) > 0) {
-                // TODO how can we detect stop loss hit in oco's?
+                $exchangeOrders = $this->orderRepository->findTakeProfitOrders($trade);
+                $leftToSellInOrder = array_reduce($exchangeOrders, static function (string $left, ExchangeOrder $order) use (
+                    $stepScale
+                ) {
+                    if ($order->getStatus() === 'CANCELLED') {
+                        return $left;
+                    }
 
-                //
+                    // subtract what is sold of the total, this is the remainder of what to sell
+                    return bcadd($left, bcsub($order->getQuantity(), $order->getFilledQuantity()), $stepScale);
+                }, '0');
+
+                // subtract everything that's already sold for this trade from our trading stack, this is the remainder
+                // of what is left to sell
+                $leftToSellInPossession = array_reduce($exchangeOrders, static function (string $total, ExchangeOrder $order) use (
+                    $stepScale
+                ) {
+                    return bcsub($total, $order->getFilledQuantity(), $stepScale);
+                }, $buyQuantityFilled);
+
+                $alreadySoldForTrade = array_reduce($exchangeOrders, static function (string $sold, ExchangeOrder $order) use (
+                    $stepScale
+                ) {
+                    return bcadd($sold, $order->getFilledQuantity(), $stepScale);
+                }, '0');
+
+                // did we already took some profit or theoretically hit stop-loss? -> cancel all outstanding buy orders
+                if (bccomp('0', $alreadySoldForTrade, $stepScale) !== 0) {
+                    $this->cancelOrders(...$this->orderRepository->findBuyOrders($trade));
+                }
+
+                // did we acquire more than currently is reserved in sell order(s)?
+                if (bccomp($leftToSellInPossession, $leftToSellInOrder, $stepScale) === 1) {
+                    $this->cancelOrders(...$exchangeOrders);
+                }
+
+                // place new orders
+                $this->createSellOrders($trade);
             } elseif ($trade->getStoploss() !== null) {
                 $slOrders = $this->orderRepository->findStopLossOrders($trade);
                 $lostAmount = array_reduce(
@@ -166,6 +200,12 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
     protected function cancelOrders(ExchangeOrder ...$orders): void
     {
         foreach ($orders as $order) {
+            // skip the already cancelled
+            if ($order->getStatus() === 'CANCELLED') {
+                continue;
+            }
+
+            $this->info('cancelling order', ['order' => $order]);
             $result = $this->binanceApiClient->request('DELETE', 'v3/order', [
                 'extra' => ['security_type' => 'TRADE'],
                 'body' => [
@@ -192,7 +232,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
      */
     protected function createSellOrders(Trade $trade): void
     {
-        $this->commandbus->dispatch(
+        $this->commandBus->dispatch(
             new CreateExchangeOrdersCommand(
                 ...$this->handle(new SellOrderQuery($trade->getId()))
             )

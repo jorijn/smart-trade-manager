@@ -30,6 +30,7 @@ class TakeProfitType extends AbstractType
                     new Regex(TradeType::PRICE_REGEX),
                 ],
             ])
+            // TODO check this against min. nominal setting of symbol
             ->add('percentage', PercentType::class, [
                 'type' => 'integer',
                 'required' => true,

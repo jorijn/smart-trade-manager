@@ -4,6 +4,8 @@ namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\CreateExchangeOrdersCommand;
 use App\Event\OrderCreatedEvent;
+use App\Model\ExchangeOcoOrder;
+use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -57,7 +59,7 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
         foreach ($command->getOrders() as $order) {
             $this->logger->info('dispatching order', ['order' => $order]);
 
-            $result = $this->binanceApiClient->request('POST', 'v3/order', [
+            $result = $this->binanceApiClient->request('POST', $order->getEndpoint(), [
                 'extra' => ['security_type' => 'TRADE'],
                 'body' => $order->toApiAttributes(),
             ]);
@@ -75,19 +77,31 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
                 continue;
             }
 
-            $order->setOrderId($result['orderId']);
-            $order->setUpdatedAt($result['transactTime']);
-            $order->setStatus($result['status']);
-            $order->setQuantity($result['origQty']);
-            $order->setFilledQuantity($result['executedQty'] ?? null);
-            $order->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
+            switch (get_class($order)) {
+                case ExchangeOrder::class:
+                    /** @var ExchangeOrder $order */
+                    $order->setOrderId($result['orderId']);
+                    $order->setUpdatedAt($result['transactTime']);
+                    $order->setStatus($result['status']);
+                    $order->setQuantity($result['origQty']);
+                    $order->setFilledQuantity($result['executedQty'] ?? null);
+                    $order->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
 
-            $this->manager->persist($order);
+                    $this->manager->persist($order);
+                    $this->manager->flush();
 
-            $this->dispatcher->dispatch(new OrderCreatedEvent($order));
+                    $this->dispatcher->dispatch(new OrderCreatedEvent($order));
+                    break;
+                case ExchangeOcoOrder::class:
+                    /** @var ExchangeOcoOrder $order */
+                    // TODO save to database
+                    break;
+                default:
+                    throw new \InvalidArgumentException('unknown type '.get_class($order).' received');
+            }
+
         }
 
-        $this->manager->flush();
         $this->logger->notice('end dispatching of new order batch');
     }
 }

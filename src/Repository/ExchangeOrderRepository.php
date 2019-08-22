@@ -61,7 +61,7 @@ class ExchangeOrderRepository extends EntityRepository
         $qb
             ->where('o.status IN (:allowedStatus)')
             ->andWhere('o.takeProfit IS NULL')
-            ->andWhere('o.stoploss IS NULL')
+            ->andWhere('o.stopPrice IS NULL')
             ->andWhere('o.trade = :trade');
 
         $qb->setParameter('allowedStatus', self::ALLOWED_ORDER_STATUS, Connection::PARAM_STR_ARRAY);
@@ -81,7 +81,7 @@ class ExchangeOrderRepository extends EntityRepository
         $qb
             ->where('o.status IN (:allowedStatus)')
             ->andWhere('o.takeProfit IS NULL')
-            ->andWhere('o.stoploss IS NOT NULL')
+            ->andWhere('o.stopPrice IS NOT NULL')
             ->andWhere('o.trade = :trade');
 
         $qb->setParameter('allowedStatus', self::ALLOWED_ORDER_STATUS, Connection::PARAM_STR_ARRAY);
@@ -101,7 +101,7 @@ class ExchangeOrderRepository extends EntityRepository
         $qb
             ->where('o.status IN (:allowedStatus)')
             ->andWhere('o.takeProfit IS NOT NULL')
-            ->andWhere('o.stoploss IS NULL')
+            ->andWhere('o.stopPrice IS NULL')
             ->andWhere('o.trade = :trade');
 
         $qb->setParameter('allowedStatus', self::ALLOWED_ORDER_STATUS, Connection::PARAM_STR_ARRAY);

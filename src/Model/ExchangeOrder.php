@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class ExchangeOrder
+class ExchangeOrder implements ExchangeOrderInterface
 {
     public const LIMIT = 'LIMIT';
     public const MARKET = 'MARKET';
@@ -403,5 +403,13 @@ class ExchangeOrder
         $this->filledQuantity = $filledQuantity;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEndpoint(): string
+    {
+        return 'v3/order';
     }
 }

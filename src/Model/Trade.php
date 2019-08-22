@@ -146,7 +146,12 @@ class Trade
      */
     public function setTakeProfits(array $takeProfits): Trade
     {
-        $this->takeProfits = $takeProfits;
+        $trade = $this;
+        $this->takeProfits = array_map(static function ($takeProfit) use ($trade) {
+            $takeProfit->setTrade($trade);
+
+            return $takeProfit;
+        }, $takeProfits);
 
         return $this;
     }
