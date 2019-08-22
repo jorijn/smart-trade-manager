@@ -43,6 +43,14 @@ services:
     tags:
       - { name: console.command }
 
+  app.command.synchronize_history:
+    class: App\Command\SynchronizeHistoryCommand
+    arguments:
+      - "app:synchronize:history"
+      - "@command.bus"
+    tags:
+      - { name: console.command }
+
   # COMMANDBUS CONFIGURATION
   app.bus.message_handler.command.create_exchange_orders:
     class: App\Bus\MessageHandler\Command\CreateExchangeOrdersHandler
