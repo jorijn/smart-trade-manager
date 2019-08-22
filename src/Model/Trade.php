@@ -12,7 +12,7 @@ class Trade
     protected $symbol;
     /** @var string */
     protected $quantity;
-    /** @var StopLoss|null */
+    /** @var string|null */
     protected $stoploss;
     /** @var string */
     protected $entryLow;
@@ -87,26 +87,6 @@ class Trade
     public function setQuantity(string $quantity): Trade
     {
         $this->quantity = $quantity;
-
-        return $this;
-    }
-
-    /**
-     * @return StopLoss|null
-     */
-    public function getStoploss(): ?StopLoss
-    {
-        return $this->stoploss;
-    }
-
-    /**
-     * @param StopLoss|null $stoploss
-     *
-     * @return Trade
-     */
-    public function setStoploss(?StopLoss $stoploss): Trade
-    {
-        $this->stoploss = $stoploss;
 
         return $this;
     }
@@ -187,6 +167,26 @@ class Trade
     public function setActive(bool $active): Trade
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getStoploss(): ?string
+    {
+        return $this->stoploss;
+    }
+
+    /**
+     * @param string|null $stoploss
+     *
+     * @return Trade
+     */
+    public function setStoploss(?string $stoploss): Trade
+    {
+        $this->stoploss = $stoploss;
 
         return $this;
     }

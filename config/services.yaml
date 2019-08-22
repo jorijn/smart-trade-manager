@@ -66,6 +66,8 @@ services:
       - "@doctrine.orm.default_entity_manager"
       - "@app.component.exchange_price_formatter"
       - "@binance_api.client"
+      - "@query.bus"
+      - "@command.bus"
     tags:
       - {
           name: messenger.message_handler,
@@ -226,3 +228,16 @@ services:
     class: App\Component\ExchangePriceFormatter
     arguments:
       - "@logger"
+
+  # FORM TYPE CONFIGURATION
+  app.form.type.trade:
+    class: App\Form\Type\TradeType
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    tags:
+      - { name: form.type }
+
+  app.form.type.take_profit:
+    class: App\Form\Type\TakeProfitType
+    tags:
+      - { name: form.type }

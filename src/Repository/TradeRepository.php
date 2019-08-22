@@ -26,6 +26,7 @@ class TradeRepository extends EntityRepository
             'NEW',
             'PARTIALLY_FILLED',
             'FILLED',
+            'CANCELLED'
         ], Connection::PARAM_STR_ARRAY);
 
         return $qb->getQuery()->execute();

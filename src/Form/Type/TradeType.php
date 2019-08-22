@@ -49,7 +49,14 @@ class TradeType extends AbstractType
         );
 
         $builder
-            ->add('stoploss', StoplossType::class)
+            ->add('stoploss', MoneyType::class, [
+                'currency' => false,
+                'scale' => 10,
+                'required' => false,
+                'constraints' => [
+                    new Positive(),
+                ],
+            ])
             ->add('symbol', ChoiceType::class, [
                 'choices' => $symbolChoices,
                 'required' => true,

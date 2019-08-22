@@ -81,12 +81,4 @@ App\Model\ExchangeOrder:
         name: take_profit_id
         referencedColumnName: id
         onDelete: CASCADE
-  oneToOne:
-    stoploss:
-      targetEntity: StopLoss
-      inversedBy: order
-      nullable: true
-      joinColumn:
-        name: stoploss_id
-        referencedColumnName: id
-        onDelete: CASCADE
+

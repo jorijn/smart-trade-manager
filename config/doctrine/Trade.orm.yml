@@ -10,6 +10,11 @@ App\Model\Trade:
     symbol:
       type: string
       length: 50
+    stoploss:
+      type: decimal
+      precision: 27
+      scale: 18
+      nullable: true
     quantity:
       type: decimal
       precision: 27
@@ -27,10 +32,6 @@ App\Model\Trade:
     active:
       type: boolean
       default: 0
-  oneToOne:
-    stoploss:
-      targetEntity: StopLoss
-      cascade: ["persist", "merge"]
   oneToMany:
     takeProfits:
       targetEntity: TakeProfit

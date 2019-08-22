@@ -2,7 +2,6 @@
 
 namespace App\OrderGenerator;
 
-use App\Model\StopLoss;
 use App\Model\Symbol;
 use App\Model\Trade;
 
@@ -15,7 +14,7 @@ class TakeProfitSellOrderGenerator extends AbstractOrderGenerator
      */
     public function supports(Trade $trade): bool
     {
-        return count($trade->getTakeProfits()) > 0 && !$trade->getStoploss() instanceof StopLoss;
+        return count($trade->getTakeProfits()) > 0 && $trade->getStoploss() === null;
     }
 
     /**

@@ -15,6 +15,7 @@ class ExchangeOrderRepository extends EntityRepository
         'NEW',
         'PARTIALLY_FILLED',
         'FILLED',
+        'CANCELLED',
     ];
 
     /**
@@ -54,12 +55,52 @@ class ExchangeOrderRepository extends EntityRepository
      *
      * @return mixed
      */
-    public function findActiveBuyOrders(Trade $trade)
+    public function findBuyOrders(Trade $trade)
     {
         $qb = $this->createQueryBuilder('o');
         $qb
             ->where('o.status IN (:allowedStatus)')
             ->andWhere('o.takeProfit IS NULL')
+            ->andWhere('o.stoploss IS NULL')
+            ->andWhere('o.trade = :trade');
+
+        $qb->setParameter('allowedStatus', self::ALLOWED_ORDER_STATUS, Connection::PARAM_STR_ARRAY);
+        $qb->setParameter('trade', $trade);
+
+        return $qb->getQuery()->execute();
+    }
+
+    /**
+     * @param Trade $trade
+     *
+     * @return mixed
+     */
+    public function findStopLossOrders(Trade $trade)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb
+            ->where('o.status IN (:allowedStatus)')
+            ->andWhere('o.takeProfit IS NULL')
+            ->andWhere('o.stoploss IS NOT NULL')
+            ->andWhere('o.trade = :trade');
+
+        $qb->setParameter('allowedStatus', self::ALLOWED_ORDER_STATUS, Connection::PARAM_STR_ARRAY);
+        $qb->setParameter('trade', $trade);
+
+        return $qb->getQuery()->execute();
+    }
+
+    /**
+     * @param Trade $trade
+     *
+     * @return mixed
+     */
+    public function findTakeProfitOrders(Trade $trade)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb
+            ->where('o.status IN (:allowedStatus)')
+            ->andWhere('o.takeProfit IS NOT NULL')
             ->andWhere('o.stoploss IS NULL')
             ->andWhere('o.trade = :trade');
 

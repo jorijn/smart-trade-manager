@@ -46,8 +46,6 @@ class ExchangeOrder
     protected $filledQuoteQuantity;
     /** @var Trade */
     protected $trade;
-    /** @var StopLoss|null */
-    protected $stoploss;
     /** @var TakeProfit|null */
     protected $takeProfit;
 

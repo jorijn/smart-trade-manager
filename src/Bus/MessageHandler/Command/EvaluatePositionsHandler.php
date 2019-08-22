@@ -2,17 +2,24 @@
 
 namespace App\Bus\MessageHandler\Command;
 
+use App\Bus\Message\Command\CreateExchangeOrdersCommand;
 use App\Bus\Message\Command\EvaluatePositionsCommand;
+use App\Bus\Message\Query\BuyOrderQuery;
+use App\Bus\Message\Query\SellOrderQuery;
 use App\Component\ExchangePriceFormatter;
 use App\Model\ExchangeOrder;
-use App\Model\StopLoss;
 use App\Model\Symbol;
 use App\Model\Trade;
+use App\Repository\ExchangeOrderRepository;
+use App\Repository\SymbolRepository;
+use App\Repository\TradeRepository;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\Persistence\ObjectRepository;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class EvaluatePositionsHandler implements LoggerAwareInterface
@@ -27,6 +34,16 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
     protected $formatter;
     /** @var HttpClientInterface */
     protected $binanceApiClient;
+    /** @var TradeRepository|ObjectRepository */
+    protected $tradeRepository;
+    /** @var ExchangeOrderRepository|ObjectRepository */
+    protected $orderRepository;
+    /** @var SymbolRepository|ObjectRepository */
+    protected $symbolRepository;
+    /** @var MessageBusInterface */
+    protected $queryBus;
+    /** @var MessageBusInterface */
+    protected $commandBus;
 
     /**
      * @param CacheItemPoolInterface $pool
@@ -34,19 +51,29 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
      * @param ObjectManager          $manager
      * @param ExchangePriceFormatter $formatter
      * @param HttpClientInterface    $binanceApiClient
+     * @param MessageBusInterface    $queryBus
+     * @param MessageBusInterface    $commandBus
      */
     public function __construct(
         CacheItemPoolInterface $pool,
         LoggerInterface $logger,
         ObjectManager $manager,
         ExchangePriceFormatter $formatter,
-        HttpClientInterface $binanceApiClient
+        HttpClientInterface $binanceApiClient,
+        MessageBusInterface $queryBus,
+        MessageBusInterface $commandBus
     ) {
         $this->pool = $pool;
         $this->manager = $manager;
-        $this->setLogger($logger);
         $this->formatter = $formatter;
         $this->binanceApiClient = $binanceApiClient;
+        $this->queryBus = $queryBus;
+        $this->commandBus = $commandBus;
+        $this->setLogger($logger);
+
+        $this->tradeRepository = $this->manager->getRepository(Trade::class);
+        $this->orderRepository = $this->manager->getRepository(ExchangeOrder::class);
+        $this->symbolRepository = $this->manager->getRepository(Symbol::class);
     }
 
     public function __invoke(EvaluatePositionsCommand $command)
@@ -58,72 +85,84 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
             return;
         }
 
-        $tradeRepository = $this->manager->getRepository(Trade::class);
-        $orderRepository = $this->manager->getRepository(ExchangeOrder::class);
-        $symbolRepository = $this->manager->getRepository(Symbol::class);
-
         // fetch all pending trades from the database
-        $trades = $tradeRepository->getPendingTrades();
-
-        // TODO subtract already sold profit of the quantity that's in posession,
-        // if any TP was partially_filled, cancel all buys!
+        $trades = $this->tradeRepository->getPendingTrades();
 
         // iterate over trades; for n in y etc
         foreach ($trades as $trade) {
-            $symbol = $symbolRepository->find($trade->getSymbol());
+            $symbol = $this->symbolRepository->find($trade->getSymbol());
             $stepScale = $this->formatter->getStepScale($symbol);
 
             // calculate quantity already in our possession
-            $buyQuantityFilled = array_reduce(
-                $orderRepository->findActiveBuyOrders($trade),
-                static function (string $quantity, ExchangeOrder $buy) use ($stepScale) {
-                    return bcadd($quantity, $buy->getFilledQuantity(), $stepScale);
-                },
-                '0'
-            );
+            $buyQuantityFilled = $this->getBuyQuantityFilled($trade, $symbol, $stepScale);
 
-            // does this trade have TakeProfit objects?
-            $takeProfits = $trade->getTakeProfits();
-            if (count($takeProfits) > 0) {
-                // do these TakeProfit objects have outstanding SELL orders?
-                $tpSells = $orderRepository->findActiveSellOrdersByTakeProfits($takeProfits->toArray());
-                $sellQuantityFilled = array_reduce(
-                    $tpSells,
-                    static function (string $quantity, ExchangeOrder $sell) use ($stepScale) {
-                        return bcadd($quantity, $sell->getFilledQuantity(), $stepScale);
+            // determine type of type
+            if (count($trade->getTakeProfits()) > 0) {
+                // TODO how can we detect stop loss hit in oco's?
+
+                //
+            } elseif ($trade->getStoploss() !== null) {
+                $slOrders = $this->orderRepository->findStopLossOrders($trade);
+                $lostAmount = array_reduce(
+                    $slOrders,
+                    static function (string $lost, ExchangeOrder $order) use ($stepScale) {
+                        return bcadd($lost, $order->getFilledQuantity(), $stepScale);
                     },
-                    '0'
+                    0.0
                 );
 
-                // is sum(filled) of buys higher than sum(quantity) of TP sells? -> we have acquired more!
-                if (bccomp($buyQuantityFilled, $sellQuantityFilled, $stepScale) === 1) {
-                    $this->cancelOrders(...$tpSells);
-                }
+                // did the stop loss order got hit somehow?
+                if (bccomp('0', $lostAmount, $stepScale) === 1) {
+                    $this->logger->info('stop loss hit, closing trade', ['trade' => $trade]);
+                    $trade->setActive(false);
+                    $this->manager->persist($trade);
+                    $this->manager->flush();
+                } else {
+                    $activeSlOrders = array_filter($slOrders, static function (ExchangeOrder $order) {
+                        return in_array($order->getStatus(), ['NEW', 'PARTIALLY_FILLED']);
+                    });
 
-                // create new SELL, TP or OCO orders because we have untracked quantity
-                $this->createNewSellOrders($trade);
-            } elseif ($trade->getStoploss() instanceof StopLoss) { // TODO implement!
-                // does this trade have a stop loss object?
+                    $quantityProtectedInSL = array_reduce(
+                        $activeSlOrders,
+                        static function (string $protected, ExchangeOrder $order) use (
+                            $stepScale
+                        ) {
+                            return bcadd($protected, $order->getQuantity(), $stepScale);
+                        },
+                        '0'
+                    );
 
-                // does this stop loss have outstanding sell order
-                if (true) {
-                    // if the bought quantity higher than the quantity of the outstanding stop loss order
-                    if (true) {
-                        // cancel the stop loss order
-                        // [...]
+                    // did we acquire more quantity than is currently put in stop-loss order(s)?
+                    if (bccomp($buyQuantityFilled, $quantityProtectedInSL, $stepScale) === 1) {
+                        // cancel them
+                        $this->cancelOrders(...$activeSlOrders);
                     }
-                    // amount in SL is equal to what we own, leave it for now.
+
+                    // send out new stop-loss order(s)
+                    $this->createSellOrders($trade);
                 }
-
-                // place a new stop loss order
-                // [...]
             }
-
-            // nothing to do, iterate to the next trade
         }
     }
 
-    // TODO find a better place for this
+    /**
+     * @param Trade  $trade
+     * @param Symbol $symbol
+     * @param int    $stepScale
+     *
+     * @return string
+     */
+    protected function getBuyQuantityFilled(Trade $trade, Symbol $symbol, int $stepScale): string
+    {
+        return array_reduce(
+            $this->orderRepository->findBuyOrders($trade),
+            static function (string $quantity, ExchangeOrder $buy) use ($stepScale) {
+                return bcadd($quantity, $buy->getFilledQuantity(), $stepScale);
+            },
+            '0'
+        );
+    }
+
     protected function cancelOrders(ExchangeOrder ...$orders): void
     {
         foreach ($orders as $order) {
@@ -149,40 +188,14 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
     }
 
     /**
-     * TODO: refactor to order generators.
-     *
      * @param Trade $trade
      */
-    protected function createNewSellOrders(Trade $trade)
+    protected function createSellOrders(Trade $trade): void
     {
-        $tradeRepository = $this->manager->getRepository(Trade::class);
-        $orderRepository = $this->manager->getRepository(ExchangeOrder::class);
-        $symbolRepository = $this->manager->getRepository(Symbol::class);
-
-        $symbol = $symbolRepository->find($trade->getSymbol());
-        $stepScale = $this->formatter->getStepScale($symbol);
-
-        // calculate quantity already in our possession
-        $acquiredQuantity = array_reduce(
-            $orderRepository->findActiveBuyOrders($trade),
-            static function (string $quantity, ExchangeOrder $buy) use ($stepScale) {
-                return bcadd($quantity, $buy->getFilledQuantity(), $stepScale);
-            },
-            '0'
+        $this->commandbus->dispatch(
+            new CreateExchangeOrdersCommand(
+                ...$this->handle(new SellOrderQuery($trade->getId()))
+            )
         );
-
-        $takeProfits = $trade->getTakeProfits();
-        $alreadySoldOrders = $orderRepository->findActiveSellOrdersByTakeProfits($takeProfits->toArray());
-        $alreadySoldQuantity = array_reduce(
-            $alreadySoldOrders,
-            static function (string $quantity, ExchangeOrder $sell) use ($stepScale) {
-                return bcadd($quantity, $sell->getFilledQuantity(), $stepScale);
-            },
-            '0'
-        );
-
-        $leftOverQuantity = bcsub($acquiredQuantity, $alreadySoldQuantity, $stepScale);
-
-        // TODO divide left over quantity over take profit spots, or maybe just extract this logic to proper order generators
     }
 }
