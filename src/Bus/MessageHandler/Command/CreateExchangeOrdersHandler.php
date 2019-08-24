@@ -35,8 +35,12 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
      * @param ObjectManager            $manager
      * @param EventDispatcherInterface $dispatcher
      */
-    public function __construct(HttpClientInterface $binanceApiClient, LoggerInterface $logger, ObjectManager $manager, EventDispatcherInterface $dispatcher)
-    {
+    public function __construct(
+        HttpClientInterface $binanceApiClient,
+        LoggerInterface $logger,
+        ObjectManager $manager,
+        EventDispatcherInterface $dispatcher
+    ) {
         $this->binanceApiClient = $binanceApiClient;
         $this->manager = $manager;
         $this->dispatcher = $dispatcher;
@@ -79,13 +83,14 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
 
             switch (get_class($order)) {
                 case ExchangeOrder::class:
-                    /** @var ExchangeOrder $order */
-                    $order->setOrderId($result['orderId']);
-                    $order->setUpdatedAt($result['transactTime']);
-                    $order->setStatus($result['status']);
-                    $order->setQuantity($result['origQty']);
-                    $order->setFilledQuantity($result['executedQty'] ?? null);
-                    $order->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
+                    /* @var ExchangeOrder $order */
+                    $order
+                        ->setOrderId($result['orderId'])
+                        ->setUpdatedAt($result['transactTime'])
+                        ->setStatus($result['status'])
+                        ->setQuantity($result['origQty'])
+                        ->setFilledQuantity($result['executedQty'] ?? null)
+                        ->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
 
                     $this->manager->persist($order);
                     $this->manager->flush();
@@ -93,13 +98,44 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
                     $this->dispatcher->dispatch(new OrderCreatedEvent($order));
                     break;
                 case ExchangeOcoOrder::class:
-                    /** @var ExchangeOcoOrder $order */
-                    // TODO save to database
+                    /* @var ExchangeOcoOrder $order */
+                    $order
+                        ->setOrderListId($result['orderListId'])
+                        ->setListStatusType($result['listStatusType'])
+                        ->setListOrderStatus($result['listOrderStatus'])
+                        ->setUpdatedAt($result['transactionTime']);
+
+                    $this->manager->persist($order);
+                    $this->manager->flush();
+
+                    foreach ($result['orderReports'] ?? [] as $orderReport) {
+                        $subOrder = new ExchangeOrder();
+                        $subOrder
+                            ->setSymbol($orderReport['symbol'])
+                            ->setOrderId($orderReport['orderId'])
+                            ->setOrderList($order)
+                            ->setPrice($orderReport['price'])
+                            ->setUpdatedAt($orderReport['transactTime'])
+                            ->setStatus($orderReport['status'])
+                            ->setQuantity($orderReport['origQty'])
+                            ->setTimeInForce($orderReport['timeInForce'])
+                            ->setType($orderReport['type'])
+                            ->setSide($orderReport['side'])
+                            ->setStopPrice($orderReport['stopPrice'] ?? null)
+                            ->setFilledQuantity($orderReport['executedQty'] ?? null)
+                            ->setFilledQuoteQuantity($orderReport['cummulativeQuoteQty'] ?? null)
+                            ->setTrade($order->getTrade())
+                            ->setTakeProfit($order->getTakeProfit());
+
+                        $this->manager->persist($subOrder);
+                        $this->manager->flush();
+
+                        $this->dispatcher->dispatch(new OrderCreatedEvent($subOrder));
+                    }
                     break;
                 default:
                     throw new \InvalidArgumentException('unknown type '.get_class($order).' received');
             }
-
         }
 
         $this->logger->notice('end dispatching of new order batch');

@@ -19,10 +19,6 @@ class ExchangeOcoOrder implements ExchangeOrderInterface
     /** @var string */
     protected $side;
     /** @var string */
-    protected $limitClientOrderId;
-    /** @var string */
-    protected $stopClientOrderId;
-    /** @var string */
     protected $quantity;
     /** @var string */
     protected $price;
@@ -34,11 +30,49 @@ class ExchangeOcoOrder implements ExchangeOrderInterface
     protected $recvWindow = 10000;
     /** @var Trade */
     protected $trade;
+    /** @var int */
+    protected $updatedAt;
+    /** @var TakeProfit */
+    protected $takeProfit;
 
-    public function __construct()
+    /**
+     * @return TakeProfit
+     */
+    public function getTakeProfit(): ?TakeProfit
     {
-        $this->limitClientOrderId = uniqid('', false);
-        $this->stopClientOrderId = uniqid('', false);
+        return $this->takeProfit;
+    }
+
+    /**
+     * @param TakeProfit $takeProfit
+     *
+     * @return ExchangeOcoOrder
+     */
+    public function setTakeProfit(TakeProfit $takeProfit): ExchangeOcoOrder
+    {
+        $this->takeProfit = $takeProfit;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getUpdatedAt(): int
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @param int $updatedAt
+     *
+     * @return ExchangeOcoOrder
+     */
+    public function setUpdatedAt(int $updatedAt): ExchangeOcoOrder
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
     }
 
     /**
@@ -177,46 +211,6 @@ class ExchangeOcoOrder implements ExchangeOrderInterface
     public function setSide(string $side): ExchangeOcoOrder
     {
         $this->side = $side;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLimitClientOrderId(): ?string
-    {
-        return $this->limitClientOrderId;
-    }
-
-    /**
-     * @param string $limitClientOrderId
-     *
-     * @return ExchangeOcoOrder
-     */
-    public function setLimitClientOrderId(string $limitClientOrderId): ExchangeOcoOrder
-    {
-        $this->limitClientOrderId = $limitClientOrderId;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getStopClientOrderId(): ?string
-    {
-        return $this->stopClientOrderId;
-    }
-
-    /**
-     * @param string $stopClientOrderId
-     *
-     * @return ExchangeOcoOrder
-     */
-    public function setStopClientOrderId(string $stopClientOrderId): ExchangeOcoOrder
-    {
-        $this->stopClientOrderId = $stopClientOrderId;
 
         return $this;
     }

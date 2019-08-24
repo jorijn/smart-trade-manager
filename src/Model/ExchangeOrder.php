@@ -48,6 +48,28 @@ class ExchangeOrder implements ExchangeOrderInterface
     protected $trade;
     /** @var TakeProfit|null */
     protected $takeProfit;
+    /** @var int */
+    protected $orderList;
+
+    /**
+     * @return int
+     */
+    public function getOrderList(): ?ExchangeOcoOrder
+    {
+        return $this->orderList;
+    }
+
+    /**
+     * @param ExchangeOcoOrder $orderList
+     *
+     * @return ExchangeOrder
+     */
+    public function setOrderList(ExchangeOcoOrder $orderList): ExchangeOrder
+    {
+        $this->orderList = $orderList;
+
+        return $this;
+    }
 
     /**
      * @return Trade
@@ -411,5 +433,21 @@ class ExchangeOrder implements ExchangeOrderInterface
     public function getEndpoint(): string
     {
         return 'v3/order';
+    }
+
+    /**
+     * @return TakeProfit|null
+     */
+    public function getTakeProfit(): ?TakeProfit
+    {
+        return $this->takeProfit;
+    }
+
+    /**
+     * @param TakeProfit|null $takeProfit
+     */
+    public function setTakeProfit(?TakeProfit $takeProfit): void
+    {
+        $this->takeProfit = $takeProfit;
     }
 }

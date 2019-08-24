@@ -129,19 +129,25 @@ class OcoSellOrderGenerator extends AbstractOrderGenerator
 
         /** @var TakeProfit $takeProfit */
         foreach ($takeProfits as $takeProfit) {
-            $size = bcmul(
-                $alreadyAcquired,
-                sprintf('0.%s', str_pad($takeProfit->getPercentage(), 2, STR_PAD_LEFT)),
-                $stepScale
-            );
+            if ($takeProfit->getPercentage() >= 100) {
+                $size = $this->formatter->roundStep($symbol, $alreadyAcquired);
+            }
+            else {
+                $size = bcmul(
+                    $alreadyAcquired,
+                    sprintf('0.%s', str_pad($takeProfit->getPercentage(), 2, STR_PAD_LEFT)),
+                    $stepScale
+                );
+            }
+
 
             // if the desired chunk is less than what's left, override and break the loop
             if (bccomp($size, $leftToSell, $stepScale) === 1) {
-                $orders[] = ['quantity' => $leftToSell, 'price' => $takeProfit->getPrice()];
+                $orders[] = ['quantity' => $leftToSell, 'price' => $takeProfit->getPrice(), 'tp' => $takeProfit];
                 break;
             }
 
-            $orders[] = ['quantity' => $size, 'price' => $takeProfit->getPrice()];
+            $orders[] = ['quantity' => $size, 'price' => $takeProfit->getPrice(), 'tp' => $takeProfit];
             $leftToSell = bcsub($leftToSell, $size, $stepScale);
         }
 
@@ -158,7 +164,7 @@ class OcoSellOrderGenerator extends AbstractOrderGenerator
     protected function convertSetsIntoOrders(Trade $trade, array $sets, Symbol $symbol): array
     {
         $orders = [];
-        foreach ($sets as ['quantity' => $quantity, 'price' => $price]) {
+        foreach ($sets as ['quantity' => $quantity, 'price' => $price, 'tp' => $takeProfit]) {
             $order = new ExchangeOcoOrder();
             $order
                 ->setSymbol($symbol->getSymbol())
@@ -171,7 +177,8 @@ class OcoSellOrderGenerator extends AbstractOrderGenerator
                     $symbol,
                     bcdiv($trade->getStoploss(), '1.01', $this->formatter->getPriceScale($symbol))
                 ))
-                ->setTrade($trade);
+                ->setTrade($trade)
+                ->setTakeProfit($takeProfit);
 
             $orders[] = $order;
         }

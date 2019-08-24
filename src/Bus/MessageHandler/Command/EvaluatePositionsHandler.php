@@ -205,7 +205,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                 continue;
             }
 
-            $this->info('cancelling order', ['order' => $order]);
+            $this->logger->info('cancelling order', ['order' => $order]);
             $result = $this->binanceApiClient->request('DELETE', 'v3/order', [
                 'extra' => ['security_type' => 'TRADE'],
                 'body' => [

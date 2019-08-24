@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Bus\Message\Command\SynchronizeOrderHistoryCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -23,6 +24,13 @@ class SynchronizeHistoryCommand extends Command
         $this->commandBus = $commandBus;
     }
 
+    protected function configure()
+    {
+        $this
+            ->addOption('with-events', null, InputOption::VALUE_NONE, 'Trigger order events')
+        ;
+    }
+
     /**
      * @param InputInterface  $input
      * @param OutputInterface $output
@@ -31,6 +39,6 @@ class SynchronizeHistoryCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->commandBus->dispatch(new SynchronizeOrderHistoryCommand());
+        $this->commandBus->dispatch(new SynchronizeOrderHistoryCommand((bool)$input->getOption('with-events')));
     }
 }

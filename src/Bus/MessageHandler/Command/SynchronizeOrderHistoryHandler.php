@@ -5,6 +5,7 @@ namespace App\Bus\MessageHandler\Command;
 use App\Bus\Message\Command\SynchronizeOrderHistoryCommand;
 use App\Event\OrderUpdatedEvent;
 use App\Exception\BinanceApiException;
+use App\Model\ExchangeOcoOrder;
 use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
@@ -59,6 +60,12 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
      */
     public function __invoke(SynchronizeOrderHistoryCommand $command)
     {
+        $this->processHistoryOfExchangeOrders($command);
+        $this->processHistoryOfOcoExchangeOrders($command);
+    }
+
+    protected function processHistoryOfExchangeOrders(SynchronizeOrderHistoryCommand $command): void
+    {
         $symbols = $this->manager->getRepository(ExchangeOrder::class)->getSymbolsWithPendingOrders();
         foreach ($symbols as $symbol) {
             $exchangeData = array_reduce(
@@ -89,7 +96,10 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
 
                 $this->manager->persist($order);
                 $this->logger->info('updated order info from exchange', $data);
-                $this->dispatcher->dispatch(new OrderUpdatedEvent($order));
+
+                if ($command->shouldTriggerEvents()) {
+                    $this->dispatcher->dispatch(new OrderUpdatedEvent($order));
+                }
             }
 
             $this->manager->flush();
@@ -130,5 +140,41 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
         }
 
         return $response;
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    protected function processHistoryOfOcoExchangeOrders(): void
+    {
+        $pendingOcoOrders = $this->manager->getRepository(ExchangeOcoOrder::class)->getPendingOrders();
+
+        foreach ($pendingOcoOrders as $order) {
+            $response = $this->binanceApi->request('GET', 'v3/orderList', [
+                'extra' => ['security_type' => 'USER_DATA'],
+                'body' => [
+                    'orderListId' => $order->getOrderListId(),
+                ],
+            ])->toArray(false);
+
+            // TODO maybe create a listener for this? -> extract logic
+            if (isset($response['code'])) {
+                throw new BinanceApiException($response['msg'], $response['code']);
+            }
+
+            $order
+                ->setListStatusType($response['listStatusType'])
+                ->setListOrderStatus($response['listOrderStatus'])
+                ->setUpdatedAt($response['transactionTime']);
+
+            $this->logger->info('updated oco order info from exchange', $response);
+
+            $this->manager->persist($order);
+            $this->manager->flush();
+        }
     }
 }
