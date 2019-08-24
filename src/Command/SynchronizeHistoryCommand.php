@@ -39,6 +39,6 @@ class SynchronizeHistoryCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->commandBus->dispatch(new SynchronizeOrderHistoryCommand((bool)$input->getOption('with-events')));
+        $this->commandBus->dispatch(new SynchronizeOrderHistoryCommand((bool) $input->getOption('with-events')));
     }
 }

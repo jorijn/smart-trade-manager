@@ -131,15 +131,13 @@ class OcoSellOrderGenerator extends AbstractOrderGenerator
         foreach ($takeProfits as $takeProfit) {
             if ($takeProfit->getPercentage() >= 100) {
                 $size = $this->formatter->roundStep($symbol, $alreadyAcquired);
-            }
-            else {
+            } else {
                 $size = bcmul(
                     $alreadyAcquired,
                     sprintf('0.%s', str_pad($takeProfit->getPercentage(), 2, STR_PAD_LEFT)),
                     $stepScale
                 );
             }
-
 
             // if the desired chunk is less than what's left, override and break the loop
             if (bccomp($size, $leftToSell, $stepScale) === 1) {

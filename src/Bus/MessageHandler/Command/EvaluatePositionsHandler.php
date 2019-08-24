@@ -2,6 +2,7 @@
 
 namespace App\Bus\MessageHandler\Command;
 
+use App\Bus\Message\Command\CancelExchangeOrdersCommand;
 use App\Bus\Message\Command\CreateExchangeOrdersCommand;
 use App\Bus\Message\Command\EvaluatePositionsCommand;
 use App\Bus\Message\Query\SellOrderQuery;
@@ -197,34 +198,12 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
         );
     }
 
+    /**
+     * @param ExchangeOrder ...$orders
+     */
     protected function cancelOrders(ExchangeOrder ...$orders): void
     {
-        foreach ($orders as $order) {
-            // skip the already cancelled
-            if ($order->getStatus() === 'CANCELLED') {
-                continue;
-            }
-
-            $this->logger->info('cancelling order', ['order' => $order]);
-            $result = $this->binanceApiClient->request('DELETE', 'v3/order', [
-                'extra' => ['security_type' => 'TRADE'],
-                'body' => [
-                    'symbol' => $order->getSymbol(),
-                    'orderId' => $order->getOrderId(),
-                ],
-            ]);
-
-            $result = $result->toArray(false);
-
-            // TODO maybe create a listener for this? -> extract logic
-            if (isset($result['code'])) {
-                $this->logger->error('failed to cancel order', [
-                    'order' => $order,
-                    'code' => $result['code'],
-                    'reason' => $result['msg'],
-                ]);
-            }
-        }
+        $this->commandBus->dispatch(new CancelExchangeOrdersCommand(...$orders));
     }
 
     /**
