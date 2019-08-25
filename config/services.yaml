@@ -32,10 +32,10 @@ services:
     tags:
       - { name: console.command }
 
-  app.command.test:
-    class: App\Command\TestCommand
+  app.command.start_trade:
+    class: App\Command\StartTradeCommand
     arguments:
-      - "app:test"
+      - "app:trade:create"
       - "@doctrine.orm.entity_manager"
       - "@query.bus"
       - "@command.bus"
