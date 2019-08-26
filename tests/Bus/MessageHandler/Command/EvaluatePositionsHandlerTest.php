@@ -98,8 +98,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testNoBuysNoSells(): void
     {
-        // nog geen sell orders, nog niets aangekocht -> niets doen
-
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
             $this->createOrder('0.00001', '0.00000', 'NEW'),
@@ -130,8 +128,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testNoSellsButFilledBuys(): void
     {
-        // nog geen sell orders, wel al dingen aangekocht -> orders plaatsen
-
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
             $this->createOrder('0.00002', '0.00001', 'PARTIALLY_FILLED'),
@@ -168,8 +164,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testAllCancelledSells(): void
     {
-        // wel sell orders maar allemaal cancelled -> plaatsen orders
-
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
             $this->createOrder('0.00002', '0.00001', 'PARTIALLY_FILLED'),
@@ -210,8 +204,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testSoldAllAcquired(): void
     {
-        // een deel verkocht al, nog geen nieuwe buys gevuld -> geen cancel en zo laten
-
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::atLeastOnce())->method('findBuyOrders')->with($this->trade)->willReturn([
             $a = $this->createOrder('0.00002', '0.00001', 'PARTIALLY_FILLED'),
@@ -246,7 +238,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testAlreadySoldSomeButAcquiredMore(): void
     {
-        // een deel verkocht al, wel nieuwe buy orders gevuld -> cancel & nieuwe orders
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::atLeastOnce())->method('findBuyOrders')->with($this->trade)->willReturn([
             $a = $this->createOrder('0.00003', '0.00002', 'PARTIALLY_FILLED'),
@@ -302,7 +293,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testAllFilledSellsAcquiredMore(): void
     {
-        // alles verkocht al, wel nieuwe buy orders gevuld -> cancel & nieuwe orders
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::atLeastOnce())->method('findBuyOrders')->with($this->trade)->willReturn([
             $a = $this->createOrder('0.00003', '0.00003', 'FILLED'),
@@ -355,7 +345,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testEverythingAcquiredIsBeingSold(): void
     {
-        // wel sell orders maar nog niets verkocht, evenveel te koop als aangekocht -> geen cancel, zo laten
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::atLeastOnce())->method('findBuyOrders')->with($this->trade)->willReturn([
             $a = $this->createOrder('0.00003', '0.00003', 'FILLED'),
@@ -380,7 +369,6 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     public function testActiveSellsNoFillsAcquiredMore(): void
     {
-        // wel sell orders maar nog niets verkocht, meer gekocht inmiddels -> cancel, nieuwe orders
         $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
         $this->orderRepository->expects(self::atLeastOnce())->method('findBuyOrders')->with($this->trade)->willReturn([
             $this->createOrder('0.00003', '0.00003', 'FILLED'),
