@@ -8,6 +8,7 @@ use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, LoggerAwareInterface
@@ -22,11 +23,14 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
     /**
      * @param ObjectManager            $manager
      * @param EventDispatcherInterface $dispatcher
+     * @param LoggerInterface          $logger
      */
-    public function __construct(ObjectManager $manager, EventDispatcherInterface $dispatcher)
+    public function __construct(ObjectManager $manager, EventDispatcherInterface $dispatcher, LoggerInterface $logger)
     {
         $this->manager = $manager;
         $this->dispatcher = $dispatcher;
+
+        $this->setLogger($logger);
     }
 
     /**

@@ -143,6 +143,7 @@ services:
     arguments:
       - "@doctrine.orm.entity_manager"
       - "@event_dispatcher"
+      - "@logger"
     tags:
       - app.websocket_event.handler
 

@@ -88,7 +88,7 @@ class StartTradeCommand extends Command
         ];
 
         if ($value = $input->getOption('range')) {
-            $config['rangeHigh'] = $value;
+            $config['entryHigh'] = $value;
         }
 
         if ($value = $input->getOption('stoploss')) {
@@ -132,6 +132,8 @@ class StartTradeCommand extends Command
                     ...$this->handle(new BuyOrderQuery($trade->getId()))
                 )
             );
+
+            $io->success('Trade created!');
         } else {
             foreach ($form->getErrors(true) as $error) {
                 $io->error(sprintf('[%s] %s', $error->getCause()->getPropertyPath(), $error->getMessage()));
