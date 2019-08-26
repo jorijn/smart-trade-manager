@@ -73,7 +73,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
     public function __invoke(EvaluatePositionsCommand $command)
     {
         $item = $this->pool->getItem(str_replace('\\', '_', get_class($command)));
-        if ($item->isHit() && $item->get() !== $command->getKey()) {
+        if (!$item->isHit() || $item->get() !== $command->getKey()) {
             $this->logger->debug('evaluating positions: probably old command, newer will follow');
 
             return;
@@ -90,58 +90,72 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
             // calculate quantity already in our possession
             $buyQuantityFilled = $this->getBuyQuantityFilled($trade, $symbol, $stepScale);
 
+            // only continue processing when we have something in our possession
+            if (bccomp($buyQuantityFilled, '0', $stepScale) === 0) {
+                continue;
+            }
+
             // determine type of type
             if (count($trade->getTakeProfits()) > 0) {
                 $exchangeOrders = $this->orderRepository->findTakeProfitOrders($trade);
-                $leftToSellInOrder = array_reduce(
-                    $exchangeOrders,
-                    static function (string $left, ExchangeOrder $order) use (
-                        $stepScale
-                    ) {
-                        if ($order->getStatus() === 'CANCELLED') {
-                            return $left;
-                        }
 
-                        // subtract what is sold of the total, this is the remainder of what to sell
-                        return bcadd($left, bcsub($order->getQuantity(), $order->getFilledQuantity()), $stepScale);
-                    },
-                    '0'
-                );
+                // these calculations are only needed when there are / were sell orders
+                if (count($exchangeOrders) > 0) {
+                    $leftToSellInOrder = array_reduce(
+                        $exchangeOrders,
+                        static function (string $left, ExchangeOrder $order) use (
+                            $stepScale
+                        ) {
+                            if ($order->getStatus() === 'CANCELLED') {
+                                return $left;
+                            }
 
-                // subtract everything that's already sold for this trade from our trading stack, this is the remainder
-                // of what is left to sell
-                $leftToSellInPossession = array_reduce(
-                    $exchangeOrders,
-                    static function (string $total, ExchangeOrder $order) use (
-                        $stepScale
-                    ) {
-                        return bcsub($total, $order->getFilledQuantity(), $stepScale);
-                    },
-                    $buyQuantityFilled
-                );
+                            // subtract what is sold of the total, this is the remainder of what to sell
+                            return bcadd(
+                                $left,
+                                bcsub($order->getQuantity(), $order->getFilledQuantity(), $stepScale),
+                                $stepScale
+                            );
+                        },
+                        '0'
+                    );
 
-                $alreadySoldForTrade = array_reduce(
-                    $exchangeOrders,
-                    static function (string $sold, ExchangeOrder $order) use (
-                        $stepScale
-                    ) {
-                        return bcadd($sold, $order->getFilledQuantity(), $stepScale);
-                    },
-                    '0'
-                );
+                    // subtract everything that's already sold for this trade from our trading stack, this is the remainder
+                    // of what is left to sell
+                    $leftToSellInPossession = array_reduce(
+                        $exchangeOrders,
+                        static function (string $total, ExchangeOrder $order) use (
+                            $stepScale
+                        ) {
+                            return bcsub($total, $order->getFilledQuantity(), $stepScale);
+                        },
+                        $buyQuantityFilled
+                    );
 
-                // did we already took some profit or theoretically hit stop-loss? -> cancel all outstanding buy orders
-                if (bccomp('0', $alreadySoldForTrade, $stepScale) !== 0) {
-                    $this->cancelOrders(...$this->orderRepository->findBuyOrders($trade));
+                    $alreadySoldForTrade = array_reduce(
+                        $exchangeOrders,
+                        static function (string $sold, ExchangeOrder $order) use (
+                            $stepScale
+                        ) {
+                            return bcadd($sold, $order->getFilledQuantity(), $stepScale);
+                        },
+                        '0'
+                    );
+
+                    // did we already took some profit or theoretically hit stop-loss? -> cancel all outstanding buy orders
+                    if (bccomp('0', $alreadySoldForTrade, $stepScale) !== 0) {
+                        $this->cancelOrders(...$this->orderRepository->findBuyOrders($trade));
+                    }
+
+                    // did we acquire more than currently is reserved in sell order(s)?
+                    if (bccomp($leftToSellInPossession, $leftToSellInOrder, $stepScale) === 1) {
+                        $this->cancelOrders(...$exchangeOrders);
+                        $this->createSellOrders($trade);
+                    }
+                } else {
+                    // place new orders
+                    $this->createSellOrders($trade);
                 }
-
-                // did we acquire more than currently is reserved in sell order(s)?
-                if (bccomp($leftToSellInPossession, $leftToSellInOrder, $stepScale) === 1) {
-                    $this->cancelOrders(...$exchangeOrders);
-                }
-
-                // place new orders
-                $this->createSellOrders($trade);
             } elseif ($trade->getStoploss() !== null) {
                 $slOrders = $this->orderRepository->findStopLossOrders($trade);
                 $lostAmount = array_reduce(
@@ -209,7 +223,13 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
      */
     protected function cancelOrders(ExchangeOrder ...$orders): void
     {
-        $this->commandBus->dispatch(new CancelExchangeOrdersCommand(...$orders));
+        $orders = array_filter($orders, static function (ExchangeOrder $order) {
+            return $order->getStatus() === 'NEW' || $order->getStatus() === 'PARTIALLY_FILLED';
+        });
+
+        if (count($orders) > 0) {
+            $this->commandBus->dispatch(new CancelExchangeOrdersCommand(...$orders));
+        }
     }
 
     /**
