@@ -22,7 +22,7 @@ FROM node:latest as assets
 
 WORKDIR /app/
 
-COPY ./package.json ./webpack.config.js ./yarn.lock /app/
+COPY ./package.json ./webpack.config.js ./package-lock.json /app/
 COPY ./assets /app/assets/
 
 RUN npm install
