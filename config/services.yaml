@@ -148,9 +148,12 @@ services:
       - app.websocket_event.handler
 
   # CONTROLLER CONFIGURATION
-  App\Controller\:
-    resource: "../src/Controller"
-    tags: ["controller.service_arguments"]
+  app.controller.single_page_app:
+    class: App\Controller\SinglePageAppController
+    calls:
+      - [setContainer, ["@service_container"]]
+    tags:
+      - { name: controller.service_arguments }
 
   # DECORATOR CONFIGURATION
   app.decorator.api_credentials_http_client:
