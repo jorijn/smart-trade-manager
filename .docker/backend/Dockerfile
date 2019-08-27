@@ -25,8 +25,8 @@ WORKDIR /app/
 COPY ./package.json ./webpack.config.js ./yarn.lock /app/
 COPY ./assets /app/assets/
 
-RUN yarn install
-RUN yarn build
+RUN npm install
+RUN npm run build
 
 FROM php:7.2-fpm-alpine
 
