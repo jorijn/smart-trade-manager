@@ -41,4 +41,5 @@ COPY --from=vendor /app/vendor/ /app/vendor/
 COPY --from=assets /app/public/build/manifest.json /app/public/build/manifest.json
 COPY --from=assets /app/public/build/entrypoints.json /app/public/build/entrypoints.json
 
-RUN mkdir -p /app/var/{cache,log} && chown -R www-data.www-data /app/var
+RUN mkdir -p /app/var/{cache,log} \
+    && chown -R www-data.www-data /app/

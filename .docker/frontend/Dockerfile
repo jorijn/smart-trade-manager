@@ -14,3 +14,5 @@ COPY .docker/frontend/nginx.conf /etc/nginx/nginx.conf
 
 COPY public /app/public/
 COPY --from=assets /app/public/build /app/public/build
+
+RUN chown -R nginx.nginx /app/
