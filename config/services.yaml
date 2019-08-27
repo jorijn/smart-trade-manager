@@ -114,6 +114,12 @@ services:
     arguments:
       - "@binance_api.client"
       - "@serializer"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: query.bus,
+          handles: App\Bus\Message\Query\SymbolListQuery,
+        }
 
   app.bus.message_handler.query.sell_orders:
     class: App\Bus\MessageHandler\Query\OrderQueryHandler
