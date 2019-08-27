@@ -17,7 +17,11 @@ services:
       context: .
       dockerfile: .docker/backend/Dockerfile
     restart: always
-    command: ["php", "/app/bin/console", "app:user-stream:process", "-vvv"]
+    command:
+      - "php"
+      - "/app/bin/console"
+      - "app:user-stream:process"
+      - "-vvv"
     env_file:
       - .env.local
     depends_on:
@@ -36,7 +40,14 @@ services:
       context: .
       dockerfile: .docker/backend/Dockerfile
     restart: always
-    command: ["php", "/app/bin/console", "messenger:consume", "async", "-vvv"]
+    command:
+      - "php"
+      - "/app/bin/console"
+      - "messenger:consume"
+      - "async"
+      - "-vvv"
+      - "--memory-limit=128M"
+      - "--time-limit=3600"
     env_file:
       - .env.local
     depends_on:
