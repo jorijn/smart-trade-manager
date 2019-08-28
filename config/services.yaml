@@ -109,6 +109,20 @@ services:
           handles: App\Bus\Message\Query\BuyOrderQuery,
         }
 
+  app.bus.message_handler.command.cancel_exchange_orders_handler:
+    class: App\Bus\MessageHandler\Command\CancelExchangeOrdersHandler
+    arguments:
+      - "@binance_api.client"
+      - "@logger"
+      - "@doctrine.orm.default_entity_manager"
+      - "@event_dispatcher"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: command.bus,
+          handles: App\Bus\Message\Command\CancelExchangeOrdersCommand,
+        }
+
   app.bus.message_handler.query.symbol_list:
     class: App\Bus\MessageHandler\Query\SymbolListQueryHandler
     arguments:

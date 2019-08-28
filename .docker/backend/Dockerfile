@@ -32,7 +32,8 @@ FROM php:7.2-fpm-alpine
 
 RUN docker-php-ext-install -j$(nproc) bcmath \
     && docker-php-ext-install -j$(nproc) pdo_mysql \
-    && docker-php-ext-install -j$(nproc) pcntl
+    && docker-php-ext-install -j$(nproc) pcntl \
+    && docker-php-ext-install -j$(nproc) intl
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 

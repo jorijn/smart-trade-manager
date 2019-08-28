@@ -111,19 +111,21 @@ class EvaluatePositionsHandlerTest extends TestCase
     }
 
     /**
-     * @param string $quantity
-     * @param string $filledQuantity
-     * @param string $status
+     * @param string   $quantity
+     * @param string   $filledQuantity
+     * @param string   $status
+     * @param int|null $id
      *
      * @return ExchangeOrder
      */
-    protected function createOrder(string $quantity, string $filledQuantity, string $status): ExchangeOrder
+    protected function createOrder(string $quantity, string $filledQuantity, string $status, int $id = null): ExchangeOrder
     {
         return
             (new ExchangeOrder())
                 ->setStatus($status)
                 ->setQuantity($quantity)
-                ->setFilledQuantity($filledQuantity);
+                ->setFilledQuantity($filledQuantity)
+                ->setOrderId($id ?? mt_rand());
     }
 
     public function testNoSellsButFilledBuys(): void

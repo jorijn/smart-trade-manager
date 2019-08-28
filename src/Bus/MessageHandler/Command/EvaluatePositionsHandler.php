@@ -84,23 +84,43 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
 
         // iterate over trades; for n in y etc
         foreach ($trades as $trade) {
+            $this->logger->debug('evaluating positions: evaluating trade', ['trade' => $trade]);
             $symbol = $this->symbolRepository->find($trade->getSymbol());
             $stepScale = $this->formatter->getStepScale($symbol);
 
             // calculate quantity already in our possession
             $buyQuantityFilled = $this->getBuyQuantityFilled($trade, $symbol, $stepScale);
+            $this->logger->debug(
+                'evaluating positions: buy quantity fetched',
+                ['buy_quantity_filled' => $buyQuantityFilled, 'trade_id' => $trade->getId()]
+            );
 
             // only continue processing when we have something in our possession
             if (bccomp($buyQuantityFilled, '0', $stepScale) === 0) {
+                $this->logger->debug(
+                    'evaluating positions: stop processing, nothing in procession',
+                    ['buy_quantity_filled' => $buyQuantityFilled, 'trade_id' => $trade->getId()]
+                );
                 continue;
             }
 
             // determine type of type
             if (count($trade->getTakeProfits()) > 0) {
+                $this->logger->debug(
+                    'evaluating positions: entering take profit mode',
+                    ['trade_id' => $trade->getId()]
+                );
                 $exchangeOrders = $this->orderRepository->findTakeProfitOrders($trade);
 
                 // these calculations are only needed when there are / were sell orders
                 if (count($exchangeOrders) > 0) {
+                    $this->logger->debug('evaluating positions: found exchange selling orders', [
+                        'ids' => array_map(function (ExchangeOrder $order) {
+                            return $order->getOrderId();
+                        }, $exchangeOrders),
+                        'trade_id' => $trade->getId(),
+                    ]);
+
                     $leftToSellInOrder = array_reduce(
                         $exchangeOrders,
                         static function (string $left, ExchangeOrder $order) use (
@@ -120,6 +140,11 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                         '0'
                     );
 
+                    $this->logger->debug(
+                        'evaluating positions: calculated what\'s left to sell',
+                        ['left_to_sell_in_order' => $leftToSellInOrder, 'trade_id' => $trade->getId()]
+                    );
+
                     // subtract everything that's already sold for this trade from our trading stack, this is the remainder
                     // of what is left to sell
                     $leftToSellInPossession = array_reduce(
@@ -132,6 +157,11 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                         $buyQuantityFilled
                     );
 
+                    $this->logger->debug(
+                        'evaluating positions: calculated what\'s left to sell in pocession',
+                        ['left_to_sell_in_pocession' => $leftToSellInPossession, 'trade_id' => $trade->getId()]
+                    );
+
                     $alreadySoldForTrade = array_reduce(
                         $exchangeOrders,
                         static function (string $sold, ExchangeOrder $order) use (
@@ -142,15 +172,51 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                         '0'
                     );
 
+                    $this->logger->debug(
+                        'evaluating positions: calculated what\'s already sold for trade',
+                        ['already_sold_for_trade' => $alreadySoldForTrade, 'trade_id' => $trade->getId()]
+                    );
+
                     // did we already took some profit or theoretically hit stop-loss? -> cancel all outstanding buy orders
                     if (bccomp('0', $alreadySoldForTrade, $stepScale) !== 0) {
+                        $this->logger->debug(
+                            'evaluating positions: cancelling orders, some target (tp or sl) got hit',
+                            ['trade_id' => $trade->getId()]
+                        );
+
                         $this->cancelOrders(...$this->orderRepository->findBuyOrders($trade));
                     }
 
-                    // did we acquire more than currently is reserved in sell order(s)?
+                    // did we acquire more than currently is reserved in sell order(s)? also check if the bought X% more
+                    // than currently is being sold, this to incorporate a margin for dust
                     if (bccomp($leftToSellInPossession, $leftToSellInOrder, $stepScale) === 1) {
-                        $this->cancelOrders(...$exchangeOrders);
-                        $this->createSellOrders($trade);
+                        $percentage = null;
+                        if (bccomp($leftToSellInOrder, '0', $stepScale) === 1) {
+                            $percentage = bcdiv($leftToSellInPossession, $leftToSellInOrder, $stepScale);
+                            $percentage = bcsub($percentage, '1', $stepScale);
+                        }
+
+                        $logContext = [
+                            'left_to_sell_in_possession' => $leftToSellInPossession,
+                            'left_to_sell_in_order' => $leftToSellInOrder,
+                            'trade_id' => $trade->getId(),
+                            'percentage' => $percentage,
+                        ];
+
+                        if ($percentage === null || bccomp($percentage, '0.0001', $stepScale) === 1) {
+                            $this->logger->debug(
+                                'evaluating positions: acquired more than currently is being sold',
+                                $logContext
+                            );
+
+                            $this->cancelOrders(...$exchangeOrders);
+                            $this->createSellOrders($trade);
+                        } else {
+                            $this->logger->debug(
+                                'evaluating positions: acquired more but difference is within 0.01% margin',
+                                $logContext
+                            );
+                        }
                     }
                 } else {
                     // place new orders
@@ -223,11 +289,29 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
      */
     protected function cancelOrders(ExchangeOrder ...$orders): void
     {
+        $this->logger->debug(
+            'evaluating positions: about to cancel orders',
+            [
+                'order_ids' => array_map(static function (ExchangeOrder $order) {
+                    return $order->getOrderId();
+                }, $orders),
+            ]
+        );
+
         $orders = array_filter($orders, static function (ExchangeOrder $order) {
             return $order->getStatus() === 'NEW' || $order->getStatus() === 'PARTIALLY_FILLED';
         });
 
         if (count($orders) > 0) {
+            $this->logger->debug(
+                'evaluating positions: cancelling orders',
+                [
+                    'order_ids' => array_map(static function (ExchangeOrder $order) {
+                        return $order->getOrderId();
+                    }, $orders),
+                ]
+            );
+
             $this->commandBus->dispatch(new CancelExchangeOrdersCommand(...$orders));
         }
     }
@@ -237,6 +321,8 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
      */
     protected function createSellOrders(Trade $trade): void
     {
+        $this->logger->debug('evaluating positions: creating new sell orders');
+
         $this->commandBus->dispatch(
             new CreateExchangeOrdersCommand(
                 ...$this->handle(new SellOrderQuery($trade->getId()))

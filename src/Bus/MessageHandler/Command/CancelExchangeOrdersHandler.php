@@ -72,9 +72,12 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
 
             /* @var ExchangeOrder $order */
             $order
-                ->setStatus($result['status'])
                 ->setFilledQuantity($result['executedQty'] ?? null)
                 ->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
+
+            if (isset($result['status'])) {
+                $order->setStatus($result['status']);
+            }
 
             $this->manager->persist($order);
             $this->manager->flush();
