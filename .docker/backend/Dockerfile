@@ -40,17 +40,13 @@ RUN set -xe \
         zlib-dev \
         icu-dev \
         g++ \
-    && docker-php-ext-configure intl \
-    && docker-php-ext-install \
-        intl \
-    && docker-php-ext-enable intl \
+    && docker-php-ext-install -j$(nproc) intl \
+    && docker-php-ext-install -j$(nproc) bcmath \
+    && docker-php-ext-install -j$(nproc) pdo_mysql \
+    && docker-php-ext-install -j$(nproc) pcntl \
     && { find /usr/local/lib -type f -print0 | xargs -0r strip --strip-all -p 2>/dev/null || true; } \
     && apk del .build-deps \
     && rm -rf /tmp/* /usr/local/lib/php/doc/* /var/cache/apk/*
-
-RUN docker-php-ext-install -j$(nproc) bcmath \
-    && docker-php-ext-install -j$(nproc) pdo_mysql \
-    && docker-php-ext-install -j$(nproc) pcntl
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
