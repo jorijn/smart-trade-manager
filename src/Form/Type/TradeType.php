@@ -62,7 +62,7 @@ class TradeType extends AbstractType
                 'required' => true,
                 'constraints' => [
                     new NotBlank(),
-                    new Choice($symbolChoices),
+                    new Choice(['choices' => $symbolChoices]),
                 ],
             ])
             ->add('quantity', MoneyType::class, [
