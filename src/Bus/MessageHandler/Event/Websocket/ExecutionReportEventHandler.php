@@ -51,7 +51,7 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
 
         if ($order->getUpdatedAt() > $payload['E']) {
             $this->logger->info('event update time was older than or equal to most recent timestamp, ignoring', [
-                'order' => $order,
+                'order_id' => $order->getOrderId(),
                 'payload' => $payload,
             ]);
 
@@ -66,7 +66,7 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
         $this->manager->flush();
 
         $this->logger->info('processed execution report for order', [
-            'order' => $order,
+            'order_id' => $order->getOrderId(),
             'payload' => $payload,
         ]);
 

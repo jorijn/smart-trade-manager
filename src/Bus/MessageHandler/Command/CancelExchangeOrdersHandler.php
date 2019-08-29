@@ -47,7 +47,7 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
 
         /** @var ExchangeOrder $order */
         foreach ($command->getOrders() as $order) {
-            $this->logger->info('dispatching order cancellation', ['order' => $order]);
+            $this->logger->info('dispatching order cancellation', ['order_id' => $order->getOrderId()]);
 
             $result = $this->binanceApiClient->request('DELETE', $order->getEndpoint(), [
                 'extra' => ['security_type' => 'TRADE'],
@@ -62,7 +62,7 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
             // TODO maybe create a listener for this? -> extract logic
             if (isset($result['code'])) {
                 $this->logger->error('failed to cancel order', [
-                    'order' => $order,
+                    'order_id' => $order->getOrderId(),
                     'code' => $result['code'],
                     'reason' => $result['msg'],
                 ]);

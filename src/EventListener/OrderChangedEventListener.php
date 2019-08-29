@@ -52,7 +52,7 @@ class OrderChangedEventListener implements LoggerAwareInterface
 
         $this->logger->info(
             'order update event received, triggering evaluation of positions',
-            ['order' => $event->getOrder()]
+            ['order_id' => $event->getOrder()->getOrderId()]
         );
 
         // dispatch it to the queue and set it to be executed in 10 seconds
