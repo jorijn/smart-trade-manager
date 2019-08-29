@@ -8,6 +8,8 @@ services:
       context: .
       dockerfile: .docker/backend/Dockerfile
     restart: always
+    volumes:
+      - "./var/log:/app/var/log"
     env_file:
       - .env.local
     depends_on:
@@ -17,6 +19,8 @@ services:
       context: .
       dockerfile: .docker/backend/Dockerfile
     restart: always
+    volumes:
+      - "./var/log:/app/var/log"
     command:
       - "php"
       - "/app/bin/console"
@@ -40,6 +44,8 @@ services:
       context: .
       dockerfile: .docker/backend/Dockerfile
     restart: always
+    volumes:
+      - "./var/log:/app/var/log"
     command:
       - "php"
       - "/app/bin/console"
