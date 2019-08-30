@@ -89,6 +89,7 @@
               label="Price"
               type="number"
               v-model="takeProfitPrice"
+              :suffix="this.isValidSymbol ? symbolObject.quoteAsset : null"
             ></v-text-field>
             <v-text-field
               label="Percentage"
@@ -259,7 +260,9 @@ export default {
   },
   watch: {
     async symbol() {
+      this.symbolsLoading = true;
       const response = await axios.get(`/api/v1/symbol/${this.symbol}`);
+      this.symbolsLoading = false;
 
       this.symbolObject = response.data.symbol;
       this.quoteBalanceFree = response.data.balance_free;
