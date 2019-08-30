@@ -8,7 +8,7 @@ App\Model\ExchangeOcoOrder:
       generator:
         strategy: NONE
   indexes:
-    idx_sdx1:
+    eoo_search_query:
       columns:
         - list_order_status
   fields:

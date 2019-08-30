@@ -17,7 +17,7 @@ class TradeRepository extends EntityRepository
         $qb = $this->createQueryBuilder('t');
         $qb
             ->leftJoin('t.orders', 'o', Join::WITH, 'o.status IN (:allowedOrderTypes)')
-            ->where('t.active = 1')
+            ->where('t.active = true')
             ->andWhere('o IS NOT NULL')
             ->groupBy('t.id')
             ->having('SUM(o.filledQuantity) > 0');

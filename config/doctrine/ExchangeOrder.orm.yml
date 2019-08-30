@@ -8,9 +8,12 @@ App\Model\ExchangeOrder:
       generator:
         strategy: NONE
   indexes:
-    idx_sdx1:
+    eo_search_query:
       columns:
         - status
+        - take_profit_id
+        - stop_price
+        - trade_id
   fields:
     symbol:
       type: string

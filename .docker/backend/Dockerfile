@@ -40,10 +40,17 @@ RUN set -xe \
         zlib-dev \
         icu-dev \
         g++ \
+    && apk add --no-cache --virtual BUILD_DEPS_PHP_AMQP rabbitmq-c-dev \
+    && apk add --no-cache rabbitmq-c \
+    && pecl install amqp \
+    && docker-php-ext-enable amqp \
+    && apk add --no-cache --virtual BUILD_DEPS_PHP_PGSQL postgresql-dev \
+    && apk add --no-cache postgresql-libs \
     && docker-php-ext-install -j$(nproc) intl \
     && docker-php-ext-install -j$(nproc) bcmath \
     && docker-php-ext-install -j$(nproc) pdo_mysql \
     && docker-php-ext-install -j$(nproc) pcntl \
+    && docker-php-ext-install -j$(nproc) pdo_pgsql pgsql \
     && { find /usr/local/lib -type f -print0 | xargs -0r strip --strip-all -p 2>/dev/null || true; } \
     && apk del .build-deps \
     && rm -rf /tmp/* /usr/local/lib/php/doc/* /var/cache/apk/*
