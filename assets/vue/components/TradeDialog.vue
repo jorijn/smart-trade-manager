@@ -11,37 +11,40 @@
             <v-autocomplete
               v-model="symbol"
               label="Symbol"
-              :items="symbols"
+              :items="symbols.map(item => item.symbol)"
+              :loading="symbolsLoading"
             ></v-autocomplete>
             <v-text-field
               :label="ladderMode ? 'Range Low Price' : 'Limit Price'"
               append-icon="fas fa-arrows-alt-v"
               @click:append="toggleLadderMode"
+              type="number"
+              v-model="rangeLow"
               required
-              :suffix="
-                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
-              "
+              :rules="[rules.required]"
+              :suffix="this.isValidSymbol ? symbolObject.quoteAsset : null"
             >
             </v-text-field>
             <v-text-field
               v-if="ladderMode"
+              type="number"
               label="Range High Price"
+              v-model="rangeHigh"
+              :rules="[rules.required]"
               required
-              :suffix="
-                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
-              "
+              :suffix="this.isValidSymbol ? symbolObject.quoteAsset : null"
             >
             </v-text-field>
             <v-text-field
-                    v-model="quantity"
-                    label="Quantity"
-                    required
-                    persistent-hint
-                    :suffix="
-                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
-              "
-                    :hint="
-                'quoteAsset' in symbolObject
+              v-model="quantity"
+              type="number"
+              label="Quantity"
+              required
+              :rules="[rules.required]"
+              persistent-hint
+              :suffix="this.isValidSymbol ? symbolObject.quoteAsset : null"
+              :hint="
+                this.isValidSymbol
                   ? `Available: ${quoteBalanceFree} ${symbolObject.quoteAsset}`
                   : null
               "
@@ -52,11 +55,56 @@
               label="Respect maximum loss setting"
             ></v-switch>
             <div>
-              <v-btn small color="accent">25%</v-btn>
-              <v-btn small color="accent">50%</v-btn>
-              <v-btn small color="accent">75%</v-btn>
-              <v-btn small color="accent">100%</v-btn>
+              <v-btn small color="primary">25%</v-btn>
+              <v-btn small color="primary">50%</v-btn>
+              <v-btn small color="primary">75%</v-btn>
+              <v-btn small color="primary">100%</v-btn>
             </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="4" lg="4" xl="4">
+        <v-card class="fill-height" :loading="loading">
+          <v-toolbar color="primary" dark>
+            <v-toolbar-title>Take Profit</v-toolbar-title>
+            <v-spacer></v-spacer>
+          </v-toolbar>
+          <v-card-text v-if="isValidSymbol && takeProfits.length > 0">
+            <v-chip
+              class="mr-2"
+              close
+              :key="price"
+              v-for="{ percentage, price } in takeProfits"
+              @click:close="removeTakeProfit(percentage, price)"
+            >
+              <span
+                >Sell <strong>{{ percentage }}%</strong> at
+                <strong>{{ price }}</strong> {{ symbolObject.quoteAsset }}</span
+              >
+            </v-chip>
+          </v-card-text>
+          <v-divider v-if="takeProfits.length > 0"></v-divider>
+          <v-card-text>
+            <v-text-field
+              label="Price"
+              type="number"
+              v-model="takeProfitPrice"
+            ></v-text-field>
+            <v-text-field
+              label="Percentage"
+              type="number"
+              v-model="takeProfitPercentage"
+              :rules="[rules.percentage, rules.percentageTakeProfit]"
+            ></v-text-field>
+            <p>
+              <v-btn
+                color="primary"
+                block
+                @click="addTakeProfit"
+                :disabled="!addTakeProfitEnabled || !isValidSymbol"
+                >Add Take Profit
+              </v-btn>
+            </p>
           </v-card-text>
         </v-card>
       </v-col>
@@ -73,34 +121,28 @@
           </v-toolbar>
           <v-card-text>
             <v-text-field
+              type="number"
               :disabled="!stoplossEnabled"
-              v-model="stoploss"
+              v-model="stoplossPrice"
               label="Stop Loss Price"
               required
-              :suffix="
-                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
-              "
+              :rules="[rules.required]"
+              :suffix="this.isValidSymbol ? symbolObject.quoteAsset : null"
             >
             </v-text-field>
-          </v-card-text> </v-card
-      >
-      </v-col>
-      <v-col cols="12" md="4" lg="4" xl="4">
-        <v-card class="fill-height" :loading="loading">
-          <v-toolbar color="primary" dark>
-            <v-toolbar-title>Take Profit</v-toolbar-title>
-            <v-spacer></v-spacer>
-          </v-toolbar>
-          <v-card-text>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci
-              asperiores aspernatur cumque deleniti, eos eum illo magnam
-              nesciunt optio placeat praesentium quaerat quos reprehenderit
-              repudiandae tempora tempore vitae voluptas voluptate.
-            </p>
+            <v-text-field
+              type="number"
+              :disabled="!stoplossEnabled"
+              v-model="stoplossPercentage"
+              label="Stop Loss (%)"
+              required
+              :rules="[rules.required]"
+              suffix="%"
+            >
+            </v-text-field>
           </v-card-text>
-        </v-card></v-col
-      >
+        </v-card>
+      </v-col>
     </v-row>
     <v-row align="center" justify="center" class="py-4">
       <v-btn
@@ -112,6 +154,7 @@
             this.loading = true;
           }
         "
+        :disabled="!createTradeEnabled"
       >
         <v-icon left>fas fa-plus</v-icon>
         Create Trade
@@ -129,24 +172,90 @@ export default {
     return {
       respectMaximumLoss: true,
       symbol: null,
-      stoploss: null,
+      stoplossPrice: null,
+      stoplossPercentage: null,
       stoplossEnabled: false,
+      symbolsLoading: false,
       quantity: null,
+      takeProfitPrice: null,
+      takeProfitPercentage: null,
       quoteBalanceFree: 0,
       quoteBalanceLocked: 0,
       accountValue: 0,
       symbolObject: {},
-      symbols: ["BTCUSDT", "XRPUSDT", "XRPETH"],
+      symbols: [],
       loading: false,
       rangeLow: null,
       rangeHigh: null,
-      ladderMode: false
+      ladderMode: false,
+      takeProfits: [],
+      rules: {
+        required: value => !!value || "Required.",
+        percentage: value => {
+          if (value === null || value.length === 0) {
+            return true;
+          }
+
+          return value > 0 && value <= 100
+            ? true
+            : "Percentage should be between 0 and 100%";
+        },
+        percentageTakeProfit(value) {
+          if (value === null || value.length === 0) {
+            return true;
+          }
+
+          // TODO apply takeProfits here instead of []
+          const totalPercentage = [].reduce(
+            (accumulator, currentValue) => accumulator + currentValue,
+            0
+          );
+
+          return totalPercentage + value <= 100
+            ? true
+            : "Percentage for Taking Profit cannot exceed 100%";
+        }
+      }
     };
   },
   methods: {
     toggleLadderMode() {
       this.ladderMode = !this.ladderMode;
+    },
+    addTakeProfit() {
+      this.takeProfits.push({
+        percentage: this.takeProfitPercentage,
+        price: this.takeProfitPrice
+      });
+
+      this.takeProfitPercentage = null;
+      this.takeProfitPrice = null;
+    },
+    removeTakeProfit(percentage, price) {
+      const index = this.takeProfits.findIndex(
+        o => o.percentage === percentage && o.price === price
+      );
+
+      if (index !== -1) {
+        this.takeProfits.splice(index, 1);
+      }
     }
+  },
+  computed: {
+    isValidSymbol() {
+      return "quoteAsset" in this.symbolObject;
+    },
+    addTakeProfitEnabled() {
+      return this.takeProfitPercentage && this.takeProfitPrice;
+    },
+    createTradeEnabled() {
+      return this.quantity > 0 && this.isValidSymbol && this.rangeLow > 0;
+    }
+  },
+  async mounted() {
+    const response = await axios.get(`/api/v1/symbol/`);
+
+    this.symbols = response.data;
   },
   watch: {
     async symbol() {

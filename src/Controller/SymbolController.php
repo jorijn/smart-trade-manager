@@ -84,4 +84,12 @@ class SymbolController extends AbstractController
             'symbol' => $symbol
         ]);
     }
+
+    /**
+     * @return JsonResponse
+     */
+    public function getSymbols(): JsonResponse
+    {
+        return $this->json($this->manager->getRepository(Symbol::class)->findAll());
+    }
 }

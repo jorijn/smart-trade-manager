@@ -9,3 +9,7 @@ entrypoint:
 api_get_symbol:
   path: /api/v1/symbol/{strSymbol}
   controller: app.controller.symbol_controller::getSymbol
+
+api_get_symbols:
+  path: /api/v1/symbol
+  controller: app.controller.symbol_controller::getSymbols
