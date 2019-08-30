@@ -1,27 +1,51 @@
 <template>
   <div>
     <v-row align="stretch">
-      <v-col sm="12" md="4">
+      <v-col cols="12" md="4" lg="4" xl="4">
         <v-card class="fill-height" :loading="loading">
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Symbol & Quantity</v-toolbar-title>
             <v-spacer></v-spacer>
           </v-toolbar>
-          <balance-information
-            v-if="symbolObject !== null"
-            :free="quoteBalanceFree"
-            :locked="quoteBalanceLocked"
-            :quote-label="symbolObject.quoteAsset"
-            account-value="0"
-            account-value-quote-label="USDT"
-          ></balance-information>
           <v-card-text>
             <v-autocomplete
               v-model="symbol"
               label="Symbol"
               :items="symbols"
             ></v-autocomplete>
-            <v-text-field v-model="quantity" label="Quantity" required>
+            <v-text-field
+              :label="ladderMode ? 'Range Low Price' : 'Limit Price'"
+              append-icon="fas fa-arrows-alt-v"
+              @click:append="toggleLadderMode"
+              required
+              :suffix="
+                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
+              "
+            >
+            </v-text-field>
+            <v-text-field
+              v-if="ladderMode"
+              label="Range High Price"
+              required
+              :suffix="
+                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
+              "
+            >
+            </v-text-field>
+            <v-text-field
+                    v-model="quantity"
+                    label="Quantity"
+                    required
+                    persistent-hint
+                    :suffix="
+                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
+              "
+                    :hint="
+                'quoteAsset' in symbolObject
+                  ? `Available: ${quoteBalanceFree} ${symbolObject.quoteAsset}`
+                  : null
+              "
+            >
             </v-text-field>
             <v-switch
               v-model="respectMaximumLoss"
@@ -36,8 +60,8 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col sm="12" md="4"
-        ><v-card class="fill-height" :loading="loading">
+      <v-col cols="12" md="4" lg="4" xl="4">
+        <v-card class="fill-height" :loading="loading">
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Stop Loss</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -53,12 +77,16 @@
               v-model="stoploss"
               label="Stop Loss Price"
               required
+              :suffix="
+                'quoteAsset' in symbolObject ? symbolObject.quoteAsset : null
+              "
             >
             </v-text-field>
           </v-card-text> </v-card
-      ></v-col>
-      <v-col sm="12" md="4"
-        ><v-card class="fill-height" :loading="loading">
+      >
+      </v-col>
+      <v-col cols="12" md="4" lg="4" xl="4">
+        <v-card class="fill-height" :loading="loading">
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Take Profit</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -94,25 +122,31 @@
 
 <script>
 import axios from "axios";
-import BalanceInformation from "./BalanceInformation";
 
 export default {
   name: "TradeDialog",
-  components: { BalanceInformation },
   data: () => {
     return {
       respectMaximumLoss: true,
       symbol: null,
       stoploss: null,
       stoplossEnabled: false,
-      quantity: 0,
+      quantity: null,
       quoteBalanceFree: 0,
       quoteBalanceLocked: 0,
       accountValue: 0,
-      symbolObject: null,
+      symbolObject: {},
       symbols: ["BTCUSDT", "XRPUSDT", "XRPETH"],
-      loading: false
+      loading: false,
+      rangeLow: null,
+      rangeHigh: null,
+      ladderMode: false
     };
+  },
+  methods: {
+    toggleLadderMode() {
+      this.ladderMode = !this.ladderMode;
+    }
   },
   watch: {
     async symbol() {

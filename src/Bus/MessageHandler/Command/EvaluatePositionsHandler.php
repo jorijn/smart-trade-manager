@@ -234,7 +234,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
 
                 // did the stop loss order got hit somehow?
                 if (bccomp('0', $lostAmount, $stepScale) === 1) {
-                    $this->logger->info('stop loss hit, closing trade', ['trade' => $trade]);
+                    $this->logger->info('stop loss hit, closing trade', ['trade_id' => $trade->getId()]);
                     $trade->setActive(false);
                     $this->manager->persist($trade);
                     $this->manager->flush();
