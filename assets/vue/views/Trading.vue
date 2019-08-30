@@ -1,12 +1,10 @@
 <template>
-  <v-layout row wrap px-2>
-    <v-flex md4 pa-1 px-2>
+  <div>
       <trade-dialog />
-    </v-flex>
-    <v-flex md8 pa-1 px-2>
+    <v-row>
       <trade-overview />
-    </v-flex>
-  </v-layout>
+    </v-row>
+  </div>
 </template>
 
 <script>

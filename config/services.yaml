@@ -176,8 +176,15 @@ services:
   # CONTROLLER CONFIGURATION
   app.controller.single_page_app:
     class: App\Controller\SinglePageAppController
-    calls:
-      - [setContainer, ["@service_container"]]
+    tags:
+      - { name: controller.service_arguments }
+
+  app.controller.symbol_controller:
+    class: App\Controller\SymbolController
+    arguments:
+      - "@binance_api.client"
+      - "@doctrine.orm.default_entity_manager"
+      - "@app.component.exchange_price_formatter"
     tags:
       - { name: controller.service_arguments }
 

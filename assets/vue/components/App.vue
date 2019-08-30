@@ -24,7 +24,7 @@
     <v-app-bar
       app
       prominent
-      color="primary"
+      color="primary darken-4"
       :src="require('../../img/nav-bar-background.jpg')"
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
@@ -32,7 +32,7 @@
     </v-app-bar>
 
     <v-content>
-      <v-container fluid>
+      <v-container>
         <router-view></router-view>
       </v-container>
     </v-content>

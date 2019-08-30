@@ -4,7 +4,7 @@ namespace App\Model;
 
 use Doctrine\ORM\PersistentCollection;
 
-class Symbol
+class Symbol implements \JsonSerializable
 {
     public const PRICE_FILTER = 'PRICE_FILTER';
     public const PERCENT_PRICE = 'PERCENT_PRICE';
@@ -269,5 +269,28 @@ class Symbol
         }
 
         return null;
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link  https://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'symbol' => $this->symbol,
+            'status' => $this->status,
+            'baseAsset' => $this->baseAsset,
+            'baseAssetPrecision' => $this->baseAssetPrecision,
+            'quoteAsset' => $this->quoteAsset,
+            'quotePrecision' => $this->quotePrecision,
+            'icebergAllowed' => $this->icebergAllowed,
+            'isSpotTradingAllowed' => $this->isSpotTradingAllowed,
+            'isMarginTradingAllowed' => $this->isMarginTradingAllowed,
+            'ocoAllowed' => $this->ocoAllowed,
+        ];
     }
 }

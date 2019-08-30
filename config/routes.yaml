@@ -1,3 +1,11 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+entrypoint:
+  path: /{vueRouting}
+  requirements:
+    vueRouting: ^(?!api).+
+  defaults:
+    vueRouting: ~
+  controller: App\Controller\SinglePageAppController::index
+
+api_get_symbol:
+  path: /api/v1/symbol/{strSymbol}
+  controller: app.controller.symbol_controller::getSymbol

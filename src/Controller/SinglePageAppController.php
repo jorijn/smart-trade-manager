@@ -3,14 +3,11 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
 
 class SinglePageAppController extends AbstractController
 {
-    /**
-     * @Route("/{vueRouting}", name="entrypoint", requirements={"vueRouting"="^(?!api).+"}, defaults={"vueRouting": null})
-     */
-    public function index()
+    public function index(): Response
     {
         return $this->render('spa/entrypoint.html.twig');
     }

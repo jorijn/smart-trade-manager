@@ -1,17 +1,19 @@
 <template>
-  <v-card>
-    <v-toolbar dense color="blue lighten-1" dark>
-      <v-toolbar-title>Trades overview</v-toolbar-title>
-      <v-spacer></v-spacer>
-    </v-toolbar>
-    <v-card-text>
-      <v-data-table
-        :headers="headers"
-        :items="values"
-        item-key="value"
-      ></v-data-table>
-    </v-card-text>
-  </v-card>
+  <v-col>
+    <v-card>
+      <v-toolbar color="secondary lighten-1" dark>
+        <v-toolbar-title>Trades Overview</v-toolbar-title>
+        <v-spacer></v-spacer>
+      </v-toolbar>
+      <v-card-text>
+        <v-data-table
+          :headers="headers"
+          :items="values"
+          item-key="value"
+        ></v-data-table>
+      </v-card-text>
+    </v-card>
+  </v-col>
 </template>
 
 <script>
