@@ -135,6 +135,17 @@ services:
           handles: App\Bus\Message\Query\SymbolListQuery,
         }
 
+  app.bus.message_handler.query.active_trades:
+    class: App\Bus\MessageHandler\Query\ActiveTradesHandler
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: query.bus,
+          handles: App\Bus\Message\Query\ActiveTradesQuery,
+        }
+
   app.bus.message_handler.query.sell_orders:
     class: App\Bus\MessageHandler\Query\OrderQueryHandler
     arguments:
@@ -185,6 +196,13 @@ services:
       - "@binance_api.client"
       - "@doctrine.orm.default_entity_manager"
       - "@app.component.exchange_price_formatter"
+    tags:
+      - { name: controller.service_arguments }
+
+  app.controller.trade_controller:
+    class: App\Controller\TradeController
+    arguments:
+      - "@query.bus"
     tags:
       - { name: controller.service_arguments }
 

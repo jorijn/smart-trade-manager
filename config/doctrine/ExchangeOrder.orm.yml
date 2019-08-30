@@ -73,6 +73,7 @@ App\Model\ExchangeOrder:
     trade:
       targetEntity: Trade
       nullable: false
+      inversedBy: orders
       joinColumn:
         name: trade_id
         referencedColumnName: id

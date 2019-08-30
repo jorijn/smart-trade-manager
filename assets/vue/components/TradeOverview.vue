@@ -17,6 +17,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "TradeOverview",
   data() {
@@ -45,6 +47,16 @@ export default {
         }
       ]
     };
+  },
+  mounted() {
+    this.getActiveTrades();
+  },
+  methods: {
+    async getActiveTrades() {
+      const result = await axios.get("/api/v1/trade");
+
+      // TODO process
+    }
   }
 };
 </script>

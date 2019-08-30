@@ -31,4 +31,17 @@ class TradeRepository extends EntityRepository
 
         return $qb->getQuery()->execute();
     }
+
+    /**
+     * @return Trade[]
+     */
+    public function getActiveTrades(): array
+    {
+        // TODO eager load
+        $qb = $this
+            ->createQueryBuilder('t')
+            ->where('t.active = true');
+
+        return $qb->getQuery()->execute();
+    }
 }

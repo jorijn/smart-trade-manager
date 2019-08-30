@@ -13,3 +13,7 @@ api_get_symbol:
 api_get_symbols:
   path: /api/v1/symbol
   controller: app.controller.symbol_controller::getSymbols
+
+api_get_trades:
+  path: /api/v1/trade
+  controller: app.controller.trade_controller::getActiveTrades

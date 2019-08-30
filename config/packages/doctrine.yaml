@@ -9,6 +9,10 @@ doctrine:
     auto_generate_proxy_classes: true
     naming_strategy: doctrine.orm.naming_strategy.underscore
     auto_mapping: true
+    # TODO: apply actual redis caching here
+    metadata_cache_driver: array
+    query_cache_driver: array
+    result_cache_driver: array
     mappings:
       App:
         is_bundle: false

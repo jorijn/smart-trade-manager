@@ -20,6 +20,7 @@ App\Model\TakeProfit:
   manyToOne:
     trade:
       targetEntity: Trade
+      inversedBy: takeProfits
       joinColumn:
         name: trade_id
         referencedColumnName: id
