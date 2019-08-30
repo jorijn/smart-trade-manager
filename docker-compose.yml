@@ -24,6 +24,7 @@ services:
     restart: always
     volumes:
       - "./var/log:/app/var/log"
+    user: www-data
     command:
       - "php"
       - "/app/bin/console"
@@ -50,6 +51,7 @@ services:
     restart: always
     volumes:
       - "./var/log:/app/var/log"
+    user: www-data
     command:
       - "php"
       - "/app/bin/console"
