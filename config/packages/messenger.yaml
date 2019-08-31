@@ -26,6 +26,7 @@ framework:
       query.bus:
         middleware:
           - validation
+          - app.bus.middleware.cache
       event.bus:
         default_middleware: allow_no_handlers
         middleware:

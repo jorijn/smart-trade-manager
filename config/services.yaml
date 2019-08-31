@@ -1,4 +1,10 @@
 services:
+  # BUS MIDDLEWARE CONFIGURATION
+  app.bus.middleware.cache:
+    class: App\Bus\Middleware\CacheMiddleware
+    arguments:
+      - "@cache.app"
+
   # COMMAND CONFIGURATION
   app.command.evaluate_positions_force:
     class: App\Command\EvaluatePositionsForceCommand
