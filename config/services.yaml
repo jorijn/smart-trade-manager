@@ -113,6 +113,42 @@ services:
           handles: App\Bus\Message\Query\BuyOrderQuery,
         }
 
+  app.bus.message_handler.query.account_value:
+    class: App\Bus\MessageHandler\Query\AccountValueHandler
+    arguments:
+      - "@doctrine.orm.entity_manager"
+      - "@binance_api.client"
+      - "@query.bus"
+      - "@logger"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: query.bus,
+          handles: App\Bus\Message\Query\AccountValueQuery,
+        }
+
+  app.bus.message_handler.query.balance:
+    class: App\Bus\MessageHandler\Query\BalanceHandler
+    arguments:
+      - "@binance_api.client"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: query.bus,
+          handles: App\Bus\Message\Query\BalanceQuery,
+        }
+
+  app.bus.message_handler.query.symbol_price:
+    class: App\Bus\MessageHandler\Query\SymbolPriceHandler
+    arguments:
+      - "@binance_api.client"
+    tags:
+      - {
+          name: messenger.message_handler,
+          bus: query.bus,
+          handles: App\Bus\Message\Query\SymbolPriceQuery,
+        }
+
   app.bus.message_handler.command.cancel_exchange_orders_handler:
     class: App\Bus\MessageHandler\Command\CancelExchangeOrdersHandler
     arguments:
@@ -191,6 +227,8 @@ services:
   # CONTROLLER CONFIGURATION
   app.controller.single_page_app:
     class: App\Controller\SinglePageAppController
+    arguments:
+      - "@twig"
     tags:
       - { name: controller.service_arguments }
 
@@ -205,6 +243,13 @@ services:
 
   app.controller.trade_controller:
     class: App\Controller\TradeController
+    arguments:
+      - "@query.bus"
+    tags:
+      - { name: controller.service_arguments }
+
+  app.controller.account_controller:
+    class: App\Controller\AccountController
     arguments:
       - "@query.bus"
     tags:

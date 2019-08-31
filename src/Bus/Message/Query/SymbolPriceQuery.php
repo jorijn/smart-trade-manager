@@ -4,14 +4,25 @@ namespace App\Bus\Message\Query;
 
 use App\Bus\Middleware\CacheInterface;
 
-class SymbolListQuery implements CacheInterface
+class SymbolPriceQuery implements CacheInterface
 {
+    /** @var string|null */
+    protected $symbol;
+
+    /**
+     * @return string|null
+     */
+    public function getSymbol(): ?string
+    {
+        return $this->symbol;
+    }
+
     /**
      * {@inheritDoc}
      */
     public function getExpiresAfter()
     {
-        return 86400;
+        return 900;
     }
 
     /**

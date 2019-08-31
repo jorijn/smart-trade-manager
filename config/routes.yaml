@@ -4,7 +4,7 @@ entrypoint:
     vueRouting: ^(?!api).+
   defaults:
     vueRouting: ~
-  controller: App\Controller\SinglePageAppController::index
+  controller: app.controller.single_page_app::index
 
 api_get_symbol:
   path: /api/v1/symbol/{strSymbol}
@@ -17,3 +17,7 @@ api_get_symbols:
 api_get_trades:
   path: /api/v1/trade
   controller: app.controller.trade_controller::getActiveTrades
+
+api_get_account_value:
+  path: /api/v1/account/value
+  controller: app.controller.account_controller::getAccountValue

@@ -185,6 +185,7 @@ export default {
   name: "TradeDialog",
   data: () => {
     return {
+      accountValue: {},
       respectMaximumLoss: true,
       symbol: null,
       stoplossPrice: null,
@@ -331,9 +332,11 @@ export default {
     }
   },
   async mounted() {
-    const response = await axios.get(`/api/v1/symbol/`);
+    const symbols = await axios.get(`/api/v1/symbol`);
+    this.symbols = symbols.data;
 
-    this.symbols = response.data;
+    const accountValue = await axios.get(`/api/v1/account/value`);
+    this.accountValue = accountValue.data;
   },
   watch: {
     async symbol() {

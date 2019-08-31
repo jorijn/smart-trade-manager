@@ -4,14 +4,14 @@ namespace App\Bus\Message\Query;
 
 use App\Bus\Middleware\CacheInterface;
 
-class SymbolListQuery implements CacheInterface
+class AccountValueQuery implements CacheInterface
 {
     /**
      * {@inheritDoc}
      */
     public function getExpiresAfter()
     {
-        return 86400;
+        return 900;
     }
 
     /**

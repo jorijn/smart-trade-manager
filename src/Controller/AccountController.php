@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
-use App\Bus\Message\Query\ActiveTradesQuery;
+use App\Bus\Message\Query\AccountValueQuery;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\HandleTrait;
 use Symfony\Component\Messenger\MessageBusInterface;
 
-class TradeController
+class AccountController
 {
     use HandleTrait;
 
@@ -22,8 +22,8 @@ class TradeController
     /**
      * @return JsonResponse
      */
-    public function getActiveTrades(): JsonResponse
+    public function getAccountValue(): JsonResponse
     {
-        return new JsonResponse($this->handle(new ActiveTradesQuery()));
+        return new JsonResponse($this->handle(new AccountValueQuery()));
     }
 }

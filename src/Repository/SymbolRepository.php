@@ -16,4 +16,21 @@ class SymbolRepository extends EntityRepository
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * @return mixed
+     */
+    public function getUniqueQuoteAssets()
+    {
+        $results = $this
+            ->createQueryBuilder('s')
+            ->select('s.quoteAsset')
+            ->distinct()
+            ->getQuery()
+            ->execute();
+
+        return array_map(static function (array $record) {
+            return $record['quoteAsset'];
+        }, $results);
+    }
 }

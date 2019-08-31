@@ -6,11 +6,8 @@ use App\Component\ExchangePriceFormatter;
 use App\Exception\BinanceApiException;
 use App\Model\Symbol;
 use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -18,7 +15,7 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class SymbolController extends AbstractController
+class SymbolController
 {
     /** @var HttpClientInterface */
     protected $httpClient;
@@ -45,11 +42,11 @@ class SymbolController extends AbstractController
     /**
      * @param string $strSymbol
      *
-     * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws ClientExceptionInterface
      *
      * @return JsonResponse
      */
@@ -77,11 +74,11 @@ class SymbolController extends AbstractController
             }
         }
 
-        return $this->json([
+        return new JsonResponse([
             'balance_free' => $free,
             'balance_locked' => $locked,
             'account_value_in_usd' => '0',
-            'symbol' => $symbol
+            'symbol' => $symbol,
         ]);
     }
 
@@ -90,6 +87,6 @@ class SymbolController extends AbstractController
      */
     public function getSymbols(): JsonResponse
     {
-        return $this->json($this->manager->getRepository(Symbol::class)->findAll());
+        return new JsonResponse($this->manager->getRepository(Symbol::class)->findAll());
     }
 }

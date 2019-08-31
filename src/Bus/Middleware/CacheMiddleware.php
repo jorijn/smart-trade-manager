@@ -43,6 +43,7 @@ class CacheMiddleware implements MiddlewareInterface
             );
         }
 
+        $envelope = $stack->next()->handle($envelope, $stack);
         $handledStamps = $envelope->all(HandledStamp::class);
 
         if (!$handledStamps) {
