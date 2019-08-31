@@ -26,6 +26,7 @@
       prominent
       color="primary darken-4"
       :src="require('../../img/nav-bar-background.jpg')"
+      dark
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title>Exchange Quick OCO</v-toolbar-title>

@@ -75,3 +75,5 @@ services:
     image: rabbitmq:alpine
     volumes:
       - "data-rabbitmq:/var/lib/rabbitmq"
+  cache:
+    image: redis:alpine

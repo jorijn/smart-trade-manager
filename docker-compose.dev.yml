@@ -15,3 +15,7 @@ services:
       - "15672:15672"
     volumes:
       - "./.docker/development/data/rabbitmq:/var/lib/rabbitmq:delegated"
+  cache:
+    image: redis:alpine
+    ports:
+      - "6379:6379"

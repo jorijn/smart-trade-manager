@@ -1,5 +1,3 @@
-parameters:
-
 services:
   # COMMAND CONFIGURATION
   app.command.evaluate_positions_force:

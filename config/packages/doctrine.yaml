@@ -1,21 +1,32 @@
 doctrine:
   dbal:
     # configure these for your database server
-    driver: 'pdo_pgsql'
-    server_version: '11.5'
+    driver: "pdo_pgsql"
+    server_version: "11.5"
     charset: UTF-8
-    url: '%env(resolve:DATABASE_URL)%'
+    url: "%env(resolve:DATABASE_URL)%"
   orm:
-    auto_generate_proxy_classes: true
+    auto_generate_proxy_classes: "%kernel.debug%"
     naming_strategy: doctrine.orm.naming_strategy.underscore
     auto_mapping: true
-    # TODO: apply actual redis caching here
-    metadata_cache_driver: array
-    query_cache_driver: array
-    result_cache_driver: array
+    metadata_cache_driver:
+      type: redis
+      host: "%env(REDIS_HOST)%"
+      port: "%env(int:REDIS_PORT)%"
+      database: 1
+    query_cache_driver:
+      type: redis
+      host: "%env(REDIS_HOST)%"
+      port: "%env(int:REDIS_PORT)%"
+      database: 1
+    result_cache_driver:
+      type: redis
+      host: "%env(REDIS_HOST)%"
+      port: "%env(int:REDIS_PORT)%"
+      database: 1
     mappings:
       App:
         is_bundle: false
         type: yml
-        dir: '%kernel.project_dir%/config/doctrine'
+        dir: "%kernel.project_dir%/config/doctrine"
         prefix: 'App\Model'

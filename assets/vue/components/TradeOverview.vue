@@ -30,22 +30,7 @@ export default {
         { value: "stoploss", text: "StopLoss" },
         { value: "takeprofits", text: "Take Profits" }
       ],
-      values: [
-        {
-          id: 14,
-          symbol: "USDT-BTC",
-          quantity: 1.2,
-          stoploss: 12111,
-          takeprofits: 3
-        },
-        {
-          id: 15,
-          symbol: "USDT-ETH",
-          quantity: 24,
-          stoploss: 219.45,
-          takeprofits: 2
-        }
-      ]
+      values: []
     };
   },
   mounted() {

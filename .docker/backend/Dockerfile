@@ -44,6 +44,8 @@ RUN set -xe \
     && apk add --no-cache rabbitmq-c \
     && pecl install amqp \
     && docker-php-ext-enable amqp \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && apk add --no-cache --virtual BUILD_DEPS_PHP_PGSQL postgresql-dev \
     && apk add --no-cache postgresql-libs \
     && docker-php-ext-install -j$(nproc) intl \
