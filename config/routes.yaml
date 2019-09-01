@@ -8,16 +8,25 @@ entrypoint:
 
 api_get_symbol:
   path: /api/v1/symbol/{strSymbol}
+  methods: [GET]
   controller: app.controller.symbol_controller::getSymbol
 
 api_get_symbols:
   path: /api/v1/symbol
+  methods: [GET]
   controller: app.controller.symbol_controller::getSymbols
 
 api_get_trades:
   path: /api/v1/trade
+  methods: [GET]
   controller: app.controller.trade_controller::getActiveTrades
+
+api_post_new_trade:
+  path: /api/v1/trade
+  methods: [POST]
+  controller: app.controller.trade_controller::postNewTrade
 
 api_get_account_value:
   path: /api/v1/account/value
+  methods: [GET]
   controller: app.controller.account_controller::getAccountValue

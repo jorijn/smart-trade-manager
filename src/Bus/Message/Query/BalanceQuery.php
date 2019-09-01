@@ -7,7 +7,7 @@ use App\Bus\Middleware\CacheInterface;
 class BalanceQuery implements CacheInterface
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getExpiresAfter()
     {
@@ -15,7 +15,7 @@ class BalanceQuery implements CacheInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getCacheKey(): string
     {

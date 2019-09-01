@@ -22,6 +22,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('api_secret')->isRequired()->end()
                         ->integerNode('ladder_size')->defaultValue(10)->end()
                         ->booleanNode('api_debugging_enabled')->defaultValue(false)->end()
+                        ->floatNode('portfolio_loss_threshold')->isRequired()->end()
                     ->end()
             ->end()
         ;

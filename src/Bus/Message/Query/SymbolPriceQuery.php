@@ -18,7 +18,7 @@ class SymbolPriceQuery implements CacheInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getExpiresAfter()
     {
@@ -26,7 +26,7 @@ class SymbolPriceQuery implements CacheInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getCacheKey(): string
     {

@@ -12,13 +12,17 @@ class SinglePageAppController
 {
     /** @var Environment */
     protected $templating;
+    /** @var float */
+    protected $portfolioLossThreshold;
 
     /**
      * @param Environment $templating
+     * @param float       $portfolioLossThreshold
      */
-    public function __construct(Environment $templating)
+    public function __construct(Environment $templating, float $portfolioLossThreshold)
     {
         $this->templating = $templating;
+        $this->portfolioLossThreshold = $portfolioLossThreshold;
     }
 
     /**
@@ -30,6 +34,10 @@ class SinglePageAppController
      */
     public function index(): Response
     {
-        return new Response($this->templating->render('spa/entrypoint.html.twig'));
+        return new Response($this->templating->render('spa/entrypoint.html.twig', [
+            'options' => [
+                'portfolio_loss_threshold' => $this->portfolioLossThreshold,
+            ],
+        ]));
     }
 }

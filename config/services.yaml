@@ -229,6 +229,7 @@ services:
     class: App\Controller\SinglePageAppController
     arguments:
       - "@twig"
+      - "%app.config.exchange.portfolio_loss_threshold%"
     tags:
       - { name: controller.service_arguments }
 
@@ -245,6 +246,7 @@ services:
     class: App\Controller\TradeController
     arguments:
       - "@query.bus"
+      - "@form.factory"
     tags:
       - { name: controller.service_arguments }
 

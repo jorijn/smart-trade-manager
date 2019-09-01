@@ -7,7 +7,7 @@ use App\Bus\Middleware\CacheInterface;
 class SymbolListQuery implements CacheInterface
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getExpiresAfter()
     {
@@ -15,7 +15,7 @@ class SymbolListQuery implements CacheInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getCacheKey(): string
     {

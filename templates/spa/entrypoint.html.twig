@@ -1,5 +1,11 @@
 {% extends 'base.html.twig' %}
 
+{% block javascripts_head %}
+    <script>
+        var options = {{ options|json_encode|raw }};
+    </script>
+{% endblock %}
+
 {% block body %}
 <app></app>
 {% endblock %}

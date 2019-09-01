@@ -4,3 +4,4 @@ app:
     api_secret: '%env(EXCHANGE_API_SECRET)%'
     ladder_size: '%env(int:EXCHANGE_LADDER_SIZE)%'
     api_debugging_enabled: '%env(bool:EXCHANGE_API_DEBUGGING_ENABLED)%'
+    portfolio_loss_threshold: '%env(float:PORTFOLIO_LOSS_THRESHOLD)%'

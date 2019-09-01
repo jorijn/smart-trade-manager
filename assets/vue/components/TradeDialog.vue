@@ -55,10 +55,14 @@
               label="Respect maximum loss setting"
             ></v-switch>
             <div>
-              <v-btn small color="primary">25%</v-btn>
-              <v-btn small color="primary">50%</v-btn>
-              <v-btn small color="primary">75%</v-btn>
-              <v-btn small color="primary">100%</v-btn>
+              <v-btn small color="primary" @click="setQuantity(0.25)"
+                >25%</v-btn
+              >
+              <v-btn small color="primary" @click="setQuantity(0.5)">50%</v-btn>
+              <v-btn small color="primary" @click="setQuantity(0.75)"
+                >75%</v-btn
+              >
+              <v-btn small color="primary" @click="setQuantity(1)">100%</v-btn>
             </div>
           </v-card-text>
         </v-card>
@@ -164,11 +168,7 @@
         color="primary"
         x-large
         rounded
-        @click="
-          () => {
-            this.loading = true;
-          }
-        "
+        @click="startTrade"
         :disabled="!createTradeEnabled"
       >
         <v-icon left>fas fa-plus</v-icon>
@@ -219,6 +219,59 @@ export default {
     };
   },
   methods: {
+    async startTrade() {
+      this.loading = true;
+      const trade = this.compileTrade();
+
+      try {
+        const response = await axios.post("/api/v1/trade", trade);
+
+        console.log(response);
+        this.loading = false;
+      } catch (error) {
+        console.log(error);
+        this.loading = false;
+      }
+    },
+    getMaxBalance() {
+      if (this.respectMaximumLoss) {
+        const entryPrice = this.getBaseEntryPrice();
+        if (
+          this.stoplossPrice === null ||
+          this.stoplossPrice.length === 0 ||
+          entryPrice === null
+        ) {
+          return null;
+        }
+
+        let maxLossPercentage =
+          parseFloat(window.options.portfolio_loss_threshold) /
+          100 /
+          (1 - parseFloat(this.stoplossPrice) / entryPrice);
+
+        if (maxLossPercentage > 1) {
+          maxLossPercentage = 1; // can't risk more than 100% of the portfolio
+        }
+
+        const maxLossAmount =
+          parseFloat(this.accountValue[this.symbolObject.quoteAsset]) *
+          maxLossPercentage;
+
+        return maxLossAmount > parseFloat(this.quoteBalanceFree)
+          ? parseFloat(this.quoteBalanceFree)
+          : maxLossAmount;
+      }
+
+      return this.quoteBalanceFree;
+    },
+    setQuantity(percentage) {
+      const maxBalance = this.getMaxBalance();
+      if (maxBalance === null) {
+        this.quantity = null;
+      }
+
+      this.quantity = (maxBalance * percentage).toFixed(8);
+    },
     validatePercentageTakeProfit(value) {
       if (value === null || value.length === 0) {
         return true;
@@ -265,6 +318,10 @@ export default {
         });
       }
 
+      this.takeProfits.sort((a, b) =>
+        Math.sign(parseFloat(b.price) - parseFloat(a.price))
+      );
+
       this.takeProfitPercentage = null;
       this.takeProfitPrice = null;
     },
@@ -294,6 +351,27 @@ export default {
       }
 
       return (parseFloat(this.rangeLow) + parseFloat(this.rangeHigh)) / 2;
+    },
+    compileTrade() {
+      const trade = {
+        entryLow: this.rangeLow,
+        symbol: this.symbol,
+        quantity: this.quantity
+      };
+
+      if (this.ladderMode) {
+        trade.entryHigh = this.rangeHigh;
+      }
+
+      if (this.stoplossEnabled) {
+        trade.stoploss = this.stoplossPrice;
+      }
+
+      if (this.takeProfits.length > 0) {
+        trade.takeProfits = this.takeProfits;
+      }
+
+      return trade;
     }
   },
   computed: {
@@ -310,7 +388,21 @@ export default {
       return this.takeProfitPercentage && this.takeProfitPrice;
     },
     createTradeEnabled() {
-      return this.quantity > 0 && this.isValidSymbol && this.rangeLow > 0;
+      const baseCriteria =
+        parseFloat(this.quantity) > 0 &&
+        this.isValidSymbol &&
+        parseFloat(this.rangeLow) > 0;
+
+      let additionalCriteria = true;
+      if (this.respectMaximumLoss) {
+        additionalCriteria =
+          this.portfolioRiskPercentage !== null &&
+          this.portfolioRiskPercentage.length > 0 &&
+          parseFloat(this.portfolioRiskPercentage) <
+            parseFloat(window.options.portfolio_loss_threshold);
+      }
+
+      return baseCriteria && additionalCriteria;
     },
     stoplossPercentage() {
       const entryPrice = this.getBaseEntryPrice();
@@ -328,7 +420,25 @@ export default {
       );
     },
     portfolioRiskPercentage() {
-      return null;
+      const entryPrice = this.getBaseEntryPrice();
+
+      if (
+        this.stoplossPrice === null ||
+        this.stoplossPrice.length === 0 ||
+        entryPrice === null ||
+        this.quantity === null ||
+        this.quantity.length === 0
+      ) {
+        return null;
+      }
+
+      return (
+        ((parseFloat(this.quantity) -
+          parseFloat(this.quantity) *
+            (parseFloat(this.stoplossPrice) / entryPrice)) /
+          parseFloat(this.accountValue[this.symbolObject.quoteAsset])) *
+        100
+      ).toFixed(5);
     }
   },
   async mounted() {

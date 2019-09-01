@@ -7,7 +7,7 @@ use App\Bus\Middleware\CacheInterface;
 class AccountValueQuery implements CacheInterface
 {
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getExpiresAfter()
     {
@@ -15,7 +15,7 @@ class AccountValueQuery implements CacheInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getCacheKey(): string
     {
