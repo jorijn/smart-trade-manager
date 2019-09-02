@@ -24,7 +24,7 @@ module.exports = {
   "settings": {
     "import/resolver": {
       "node": {
-        "paths": ["assets"]
+        "paths": ["assets/vue"]
       }
     }
   }

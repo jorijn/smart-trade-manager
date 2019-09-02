@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class TradeType extends AbstractType
 {
-    public const PRICE_REGEX = '/^\d{0,9}(\.\d{1,18})?$/';
+    public const PRICE_REGEX = '/^$|^\d{0,9}(\.\d{1,18})?$/';
 
     /** @var ObjectManager */
     protected $manager;
@@ -99,7 +99,7 @@ class TradeType extends AbstractType
                         $data = $root->getData();
 
                         if ($object <= $data->getEntryLow()) {
-                            $context->addViolation('entryHigh needs to be higher than entryLow');
+                            $context->addViolation('entry high needs to be higher than entry low');
                         }
                     }),
                 ],
@@ -115,6 +115,7 @@ class TradeType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Trade::class,
+            'method' => 'POST'
         ]);
     }
 }

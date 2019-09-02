@@ -2,7 +2,7 @@
   <div>
     <v-row align="stretch">
       <v-col cols="12" md="4" lg="4" xl="4">
-        <v-card class="fill-height" :loading="loading">
+        <v-card class="fill-height">
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Symbol & Quantity</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -50,11 +50,7 @@
               "
             >
             </v-text-field>
-            <v-switch
-              v-model="respectMaximumLoss"
-              label="Respect maximum loss setting"
-            ></v-switch>
-            <div>
+            <div class="mt-3">
               <v-btn small color="primary" @click="setQuantity(0.25)"
                 >25%</v-btn
               >
@@ -64,11 +60,19 @@
               >
               <v-btn small color="primary" @click="setQuantity(1)">100%</v-btn>
             </div>
+            <v-switch
+              v-model="respectMaximumLoss"
+              label="Maximum Loss Protection"
+              :hint="
+                `This will prevent the creation of a trade if it puts your portfolio at more risk than the configured ${portfolioLossThreshold}%.`
+              "
+              persistent-hint
+            ></v-switch>
           </v-card-text>
         </v-card>
       </v-col>
       <v-col cols="12" md="4" lg="4" xl="4">
-        <v-card class="fill-height" :loading="loading">
+        <v-card class="fill-height">
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Take Profit</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -121,7 +125,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="4" lg="4" xl="4">
-        <v-card class="fill-height" :loading="loading">
+        <v-card class="fill-height">
           <v-toolbar color="primary" dark>
             <v-toolbar-title>Stop Loss</v-toolbar-title>
             <v-spacer></v-spacer>
@@ -165,14 +169,21 @@
     </v-row>
     <v-row align="center" justify="center" class="py-4">
       <v-btn
-        color="primary"
+        :color="this.confirmation ? 'warning' : 'primary'"
         x-large
         rounded
         @click="startTrade"
         :disabled="!createTradeEnabled"
+        :loading="loading"
       >
-        <v-icon left>fas fa-plus</v-icon>
-        Create Trade
+        <v-icon left v-if="!this.confirmation">fas fa-plus</v-icon>
+        <v-icon left v-else>fas fa-exclamation-triangle</v-icon>
+        <span v-if="!this.confirmation">
+          Create Trade
+        </span>
+        <span v-else>
+          I am sure, create trade
+        </span>
       </v-btn>
     </v-row>
   </div>
@@ -185,6 +196,7 @@ export default {
   name: "TradeDialog",
   data: () => {
     return {
+      confirmation: false,
       accountValue: {},
       respectMaximumLoss: true,
       symbol: null,
@@ -196,7 +208,6 @@ export default {
       takeProfitPercentage: null,
       quoteBalanceFree: 0,
       quoteBalanceLocked: 0,
-      accountValue: 0,
       symbolObject: {},
       symbols: [],
       loading: false,
@@ -204,6 +215,7 @@ export default {
       rangeHigh: null,
       ladderMode: false,
       takeProfits: [],
+      portfolioLossThreshold: 0,
       rules: {
         required: value => !!value || "Required.",
         percentage: value => {
@@ -220,16 +232,22 @@ export default {
   },
   methods: {
     async startTrade() {
+      if (!this.confirmation) {
+        this.confirmation = true;
+        return;
+      }
+
+      this.confirmation = false;
+
       this.loading = true;
       const trade = this.compileTrade();
 
       try {
-        const response = await axios.post("/api/v1/trade", trade);
-
-        console.log(response);
+        await axios.post("/api/v1/trade", trade);
         this.loading = false;
+
+        this.$emit("tradeCreate");
       } catch (error) {
-        console.log(error);
         this.loading = false;
       }
     },
@@ -245,7 +263,7 @@ export default {
         }
 
         let maxLossPercentage =
-          parseFloat(window.options.portfolio_loss_threshold) /
+          parseFloat(this.portfolioLossThreshold) /
           100 /
           (1 - parseFloat(this.stoplossPrice) / entryPrice);
 
@@ -371,7 +389,7 @@ export default {
         trade.takeProfits = this.takeProfits;
       }
 
-      return trade;
+      return { trade };
     }
   },
   computed: {
@@ -399,7 +417,7 @@ export default {
           this.portfolioRiskPercentage !== null &&
           this.portfolioRiskPercentage.length > 0 &&
           parseFloat(this.portfolioRiskPercentage) <
-            parseFloat(window.options.portfolio_loss_threshold);
+            parseFloat(this.portfolioLossThreshold);
       }
 
       return baseCriteria && additionalCriteria;
@@ -447,6 +465,13 @@ export default {
 
     const accountValue = await axios.get(`/api/v1/account/value`);
     this.accountValue = accountValue.data;
+
+    if (
+      typeof window.options !== "undefined" &&
+      "portfolio_loss_threshold" in window.options
+    ) {
+      this.portfolioLossThreshold = window.options.portfolio_loss_threshold;
+    }
   },
   watch: {
     async symbol() {

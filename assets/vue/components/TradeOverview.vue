@@ -1,6 +1,6 @@
 <template>
   <v-col>
-    <v-card>
+    <v-card :loading="loading">
       <v-toolbar color="secondary lighten-1" dark>
         <v-toolbar-title>Trades Overview</v-toolbar-title>
         <v-spacer></v-spacer>
@@ -17,8 +17,6 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "TradeOverview",
   data() {
@@ -33,14 +31,11 @@ export default {
       values: []
     };
   },
-  mounted() {
-    this.getActiveTrades();
-  },
-  methods: {
-    async getActiveTrades() {
-      const result = await axios.get("/api/v1/trade");
-
-      // TODO process
+  props: {
+    trades: Array,
+    loading: {
+      type: Boolean,
+      default: false
     }
   }
 };

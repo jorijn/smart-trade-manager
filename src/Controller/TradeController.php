@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Bus\Message\Command\CreateExchangeOrdersCommand;
 use App\Bus\Message\Query\ActiveTradesQuery;
+use App\Bus\Message\Query\BuyOrderQuery;
 use App\Form\Type\TradeType;
 use App\Model\Trade;
+use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,15 +19,27 @@ class TradeController
     use HandleTrait;
     /** @var FormFactoryInterface */
     protected $formFactory;
+    /** @var MessageBusInterface */
+    protected $commandBus;
+    /** @var ObjectManager */
+    protected $manager;
 
     /**
      * @param MessageBusInterface  $queryBus
      * @param FormFactoryInterface $formFactory
+     * @param MessageBusInterface  $commandBus
+     * @param ObjectManager        $manager
      */
-    public function __construct(MessageBusInterface $queryBus, FormFactoryInterface $formFactory)
-    {
+    public function __construct(
+        MessageBusInterface $queryBus,
+        FormFactoryInterface $formFactory,
+        MessageBusInterface $commandBus,
+        ObjectManager $manager
+    ) {
         $this->messageBus = $queryBus;
         $this->formFactory = $formFactory;
+        $this->commandBus = $commandBus;
+        $this->manager = $manager;
     }
 
     /**
@@ -48,10 +63,18 @@ class TradeController
         $form = $this->formFactory->create(TradeType::class, new Trade());
         $form->handleRequest($request);
 
-        dump($request->getContent());
         if ($form->isSubmitted() && $form->isValid()) {
             $trade = $form->getData();
-            // TODO finish
+
+            $this->manager->persist($trade);
+            $this->manager->flush();
+
+            $this->commandBus->dispatch(
+                new CreateExchangeOrdersCommand(
+                    ...$this->handle(new BuyOrderQuery($trade->getId()))
+                )
+            );
+
             return new JsonResponse([]);
         }
 

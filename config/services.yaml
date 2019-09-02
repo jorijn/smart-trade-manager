@@ -247,6 +247,8 @@ services:
     arguments:
       - "@query.bus"
       - "@form.factory"
+      - "@command.bus"
+      - "@doctrine.orm.default_entity_manager"
     tags:
       - { name: controller.service_arguments }
 
@@ -337,6 +339,11 @@ services:
           method: "onOrderChanged",
         }
 
+  App\EventListener\JsonRequestBodyEventListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.request }
+
+  # GENERIC COMPONENTS CONFIGURATION
   app.component.exchange_price_formatter:
     class: App\Component\ExchangePriceFormatter
     arguments:
