@@ -124,20 +124,26 @@ export default {
               price: roundTicks(parseFloat(tp.price), getTickSize(symbol))
             };
           }),
-          buy_orders_filled: item.orders.reduce((total, i) => {
-            if (i.side !== "BUY") {
-              return total;
-            }
+          buy_orders_filled: roundStep(
+            item.orders.reduce((total, i) => {
+              if (i.side !== "BUY") {
+                return total;
+              }
 
-            return total + parseFloat(i.filledQuantity);
-          }, 0.0),
-          buy_orders_quantity: item.orders.reduce((total, i) => {
-            if (i.side !== "BUY") {
-              return total;
-            }
+              return total + parseFloat(i.filledQuantity);
+            }, 0.0),
+            getStepSize(symbol)
+          ),
+          buy_orders_quantity: roundStep(
+            item.orders.reduce((total, i) => {
+              if (i.side !== "BUY") {
+                return total;
+              }
 
-            return total + parseFloat(i.quantity);
-          }, 0.0)
+              return total + parseFloat(i.quantity);
+            }, 0.0),
+            getStepSize(symbol)
+          )
         };
       });
     }
