@@ -29,7 +29,7 @@
       shrink-on-scroll
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title>Exchange Quick OCO</v-toolbar-title>
+      <v-toolbar-title>Smart Trade Manager</v-toolbar-title>
     </v-app-bar>
 
     <v-content>

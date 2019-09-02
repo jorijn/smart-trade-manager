@@ -1,3 +1,3 @@
-# Project "Exchange Quick OCO"
+# Project "Smart Trade Manager"
 
 FIXME
