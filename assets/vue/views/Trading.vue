@@ -1,9 +1,10 @@
 <template>
   <div>
-    <trade-dialog />
+    <trade-dialog :symbols="symbols" />
     <v-row>
       <trade-overview
         @tradeCreate="getActiveTrades"
+        :symbols="symbols"
         :loading="overviewLoading"
         :trades="trades"
       />
@@ -22,13 +23,20 @@ export default {
   data() {
     return {
       trades: [],
-      overviewLoading: false
+      overviewLoading: true,
+      symbols: []
     };
   },
-  mounted() {
+  async mounted() {
+    await this.getSymbols();
+
     this.getActiveTrades();
   },
   methods: {
+    async getSymbols() {
+      const symbols = await axios.get(`/api/v1/symbol`);
+      this.symbols = symbols.data;
+    },
     async getActiveTrades() {
       this.overviewLoading = true;
 

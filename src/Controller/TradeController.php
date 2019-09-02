@@ -57,9 +57,6 @@ class TradeController
      */
     public function postNewTrade(Request $request): JsonResponse
     {
-        // TODO move this to a request listener
-        // data comes in as JSON, form can't handle that
-
         $form = $this->formFactory->create(TradeType::class, new Trade());
         $form->handleRequest($request);
 

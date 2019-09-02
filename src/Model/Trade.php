@@ -3,8 +3,9 @@
 namespace App\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
-class Trade
+class Trade implements \JsonSerializable
 {
     /** @var int|null */
     protected $id;
@@ -194,5 +195,19 @@ class Trade
         $this->stoploss = $stoploss;
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        return array_map(static function ($value) {
+            if ($value instanceof Collection) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, get_object_vars($this));
     }
 }

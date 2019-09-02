@@ -2,7 +2,9 @@
 
 namespace App\Model;
 
-class ExchangeOcoOrder implements ExchangeOrderInterface
+use Doctrine\Common\Collections\Collection;
+
+class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
 {
     /** @var string */
     protected $orderListId;
@@ -373,5 +375,19 @@ class ExchangeOcoOrder implements ExchangeOrderInterface
     public function getEndpoint(): string
     {
         return 'v3/order/oco';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        return array_map(static function ($value) {
+            if ($value instanceof Collection) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, array_diff_key(get_object_vars($this), array_flip(['trade', 'takeProfit'])));
     }
 }

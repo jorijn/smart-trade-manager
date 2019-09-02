@@ -2,7 +2,9 @@
 
 namespace App\Model;
 
-class TakeProfit
+use Doctrine\Common\Collections\Collection;
+
+class TakeProfit implements \JsonSerializable
 {
     /** @var int|null */
     protected $id;
@@ -111,5 +113,19 @@ class TakeProfit
         $this->trade = $trade;
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        return array_map(static function ($value) {
+            if ($value instanceof Collection) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, array_diff_key(get_object_vars($this), array_flip(['trade'])));
     }
 }

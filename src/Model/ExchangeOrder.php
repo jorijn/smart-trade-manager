@@ -2,7 +2,9 @@
 
 namespace App\Model;
 
-class ExchangeOrder implements ExchangeOrderInterface
+use Doctrine\Common\Collections\Collection;
+
+class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
 {
     public const LIMIT = 'LIMIT';
     public const MARKET = 'MARKET';
@@ -140,8 +142,8 @@ class ExchangeOrder implements ExchangeOrderInterface
             'symbol' => $this->symbol,
             'side' => $this->side,
             'type' => $this->type,
-            'quantity' => (string) $this->quantity,
-            'price' => (string) $this->price,
+            'quantity' => (string)$this->quantity,
+            'price' => (string)$this->price,
         ];
 
         if ($this->timeInForce) {
@@ -449,5 +451,31 @@ class ExchangeOrder implements ExchangeOrderInterface
     public function setTakeProfit(?TakeProfit $takeProfit): void
     {
         $this->takeProfit = $takeProfit;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        $attributes = array_map(static function ($value) {
+            if ($value instanceof Collection) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, array_diff_key(get_object_vars($this), array_flip(['trade', 'takeProfit'])));
+
+        $attributes['type'] = 'unknown';
+        if (!empty($this->stopPrice)) {
+            $attributes['type'] = 'STOP_LOSS';
+        } elseif (!$this->takeProfit instanceof TakeProfit) {
+            $attributes['type'] = 'BUY';
+        }
+        else {
+            $attributes['type'] = 'TAKE_PROFIT';
+        }
+
+        return $attributes;
     }
 }

@@ -209,7 +209,6 @@ export default {
       quoteBalanceFree: 0,
       quoteBalanceLocked: 0,
       symbolObject: {},
-      symbols: [],
       loading: false,
       rangeLow: null,
       rangeHigh: null,
@@ -460,9 +459,6 @@ export default {
     }
   },
   async mounted() {
-    const symbols = await axios.get(`/api/v1/symbol`);
-    this.symbols = symbols.data;
-
     const accountValue = await axios.get(`/api/v1/account/value`);
     this.accountValue = accountValue.data;
 
@@ -471,6 +467,13 @@ export default {
       "portfolio_loss_threshold" in window.options
     ) {
       this.portfolioLossThreshold = window.options.portfolio_loss_threshold;
+    }
+  },
+  props: {
+    symbols: {
+      type: Array,
+      default: () => [],
+      required: true
     }
   },
   watch: {

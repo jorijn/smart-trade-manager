@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\PersistentCollection;
 
 class Symbol implements \JsonSerializable
@@ -272,28 +273,16 @@ class Symbol implements \JsonSerializable
     }
 
     /**
-     * Specify data which should be serialized to JSON.
-     *
-     * @see  https://php.net/manual/en/jsonserializable.jsonserialize.php
-     *
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     *               which is a value of any type other than a resource
-     *
-     * @since 5.4.0
+     * {@inheritdoc}
      */
     public function jsonSerialize()
     {
-        return [
-            'symbol' => $this->symbol,
-            'status' => $this->status,
-            'baseAsset' => $this->baseAsset,
-            'baseAssetPrecision' => $this->baseAssetPrecision,
-            'quoteAsset' => $this->quoteAsset,
-            'quotePrecision' => $this->quotePrecision,
-            'icebergAllowed' => $this->icebergAllowed,
-            'isSpotTradingAllowed' => $this->isSpotTradingAllowed,
-            'isMarginTradingAllowed' => $this->isMarginTradingAllowed,
-            'ocoAllowed' => $this->ocoAllowed,
-        ];
+        return array_map(static function ($value) {
+            if ($value instanceof Collection) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, get_object_vars($this));
     }
 }

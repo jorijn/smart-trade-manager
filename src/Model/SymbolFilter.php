@@ -2,7 +2,9 @@
 
 namespace App\Model;
 
-class SymbolFilter
+use Doctrine\Common\Collections\Collection;
+
+class SymbolFilter implements \JsonSerializable
 {
     /** @var int */
     protected $id;
@@ -88,5 +90,19 @@ class SymbolFilter
     public function getParameter(string $parameter): ?string
     {
         return $this->parameters[$parameter] ?? null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        return array_map(static function ($value) {
+            if ($value instanceof Collection) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, array_diff_key(get_object_vars($this), array_flip(['symbol'])));
     }
 }
