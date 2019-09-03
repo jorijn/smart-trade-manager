@@ -27,4 +27,4 @@ yarn-error.log
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 
-.docker-compose.local.yml
+docker-compose.yml
