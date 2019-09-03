@@ -5,7 +5,7 @@ App\Model\Trade:
     id:
       type: integer
       generator:
-        strategy: AUTO
+        strategy: IDENTITY
   fields:
     symbol:
       type: string

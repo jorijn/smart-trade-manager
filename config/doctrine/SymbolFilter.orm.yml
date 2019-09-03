@@ -5,7 +5,7 @@ App\Model\SymbolFilter:
     id:
       type: integer
       generator:
-        strategy: AUTO
+        strategy: IDENTITY
   uniqueConstraints:
     - name: idx_unique
       columns:

@@ -5,7 +5,7 @@ App\Model\TakeProfit:
     id:
       type: integer
       generator:
-        strategy: AUTO
+        strategy: IDENTITY
   fields:
     percentage:
       type: decimal

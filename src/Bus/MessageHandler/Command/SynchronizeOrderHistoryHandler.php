@@ -85,7 +85,11 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
             foreach ($ordersToBeUpdated as $order) {
                 $data = $exchangeData[$order->getOrderId()];
                 if ($data['updateTime'] <= $order->getUpdatedAt()) {
-                    $this->logger->debug('received order info but local copy is more recent, ignoring', $data);
+                    $this->logger->debug('received order info but local copy is more recent, ignoring', [
+                        'id' => $order->getOrderId(),
+                        'remote_ts' => $data['updateTime'],
+                        'local_ts' => $order->getUpdatedAt(),
+                    ]);
                     continue;
                 }
 
@@ -109,11 +113,11 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
     /**
      * @param array $pair
      *
-     * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
      * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
      *
      * @return array of orders
      */
