@@ -3,7 +3,6 @@
 namespace App\Bus\MessageHandler\Query;
 
 use App\Bus\Message\Query\SymbolPriceQuery;
-use App\Exception\BinanceApiException;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -41,11 +40,6 @@ class SymbolPriceHandler
         $response = $this->httpClient->request('GET', 'v3/ticker/price', [
             'query' => array_filter(['symbol' => $query->getSymbol()]),
         ])->toArray(false);
-
-        // TODO maybe create a listener for this? -> extract logic
-        if (isset($response['code'])) {
-            throw new BinanceApiException($response['msg'], $response['code']);
-        }
 
         return array_reduce($response, static function (array $prices, array $symbol) {
             $prices[$symbol['symbol']] = $symbol['price'];

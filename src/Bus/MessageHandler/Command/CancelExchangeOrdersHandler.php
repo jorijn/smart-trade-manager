@@ -4,6 +4,7 @@ namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\CancelExchangeOrdersCommand;
 use App\Event\OrderCancelledEvent;
+use App\Exception\BinanceApiException;
 use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
@@ -49,25 +50,20 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
         foreach ($command->getOrders() as $order) {
             $this->logger->info('dispatching order cancellation', ['order_id' => $order->getOrderId()]);
 
-            $result = $this->binanceApiClient->request('DELETE', $order->getEndpoint(), [
-                'extra' => ['security_type' => 'TRADE'],
-                'body' => [
-                    'symbol' => $order->getSymbol(),
-                    'orderId' => $order->getOrderId(),
-                ],
-            ]);
-
-            $result = $result->toArray(false);
-
-            // TODO maybe create a listener for this? -> extract logic
-            if (isset($result['code'])) {
+            try {
+                $result = $this->binanceApiClient->request('DELETE', $order->getEndpoint(), [
+                    'extra' => ['security_type' => 'TRADE'],
+                    'body' => [
+                        'symbol' => $order->getSymbol(),
+                        'orderId' => $order->getOrderId(),
+                    ],
+                ])->toArray(false);
+            } catch (BinanceApiException $exception) {
                 $this->logger->error('failed to cancel order', [
                     'order_id' => $order->getOrderId(),
-                    'code' => $result['code'],
-                    'reason' => $result['msg'],
+                    'code' => $exception->getCode(),
+                    'reason' => $exception->getMessage(),
                 ]);
-
-                continue;
             }
 
             /* @var ExchangeOrder $order */

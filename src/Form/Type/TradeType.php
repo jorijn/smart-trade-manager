@@ -115,7 +115,7 @@ class TradeType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Trade::class,
-            'method' => 'POST'
+            'method' => 'POST',
         ]);
     }
 }

@@ -142,8 +142,8 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
             'symbol' => $this->symbol,
             'side' => $this->side,
             'type' => $this->type,
-            'quantity' => (string)$this->quantity,
-            'price' => (string)$this->price,
+            'quantity' => (string) $this->quantity,
+            'price' => (string) $this->price,
         ];
 
         if ($this->timeInForce) {
@@ -471,8 +471,7 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
             $attributes['type'] = 'STOP_LOSS';
         } elseif (!$this->takeProfit instanceof TakeProfit) {
             $attributes['type'] = 'BUY';
-        }
-        else {
+        } else {
             $attributes['type'] = 'TAKE_PROFIT';
         }
 

@@ -263,7 +263,7 @@ services:
   app.decorator.api_credentials_http_client:
     class: App\Decorator\ApiCredentialsHttpClientDecorator
     decorates: binance_api.client
-    decoration_priority: 5
+    decoration_priority: 20
     arguments:
       - "@app.decorator.api_credentials_http_client.inner"
       - "%app.config.exchange.api_key%"
@@ -276,6 +276,13 @@ services:
     arguments:
       - "@app.decorator.verbose_http_client.inner"
       - "%app.config.exchange.api_debugging_enabled%"
+
+  app.decorator.api_error_handler:
+    class: App\Decorator\ErrorHandlerHttpClientDecorator
+    decorates: binance_api.client
+    decoration_priority: 10
+    arguments:
+      - "@app.decorator.api_error_handler.inner"
 
   # ORDER GENERATOR CONFIGURATION
   app.order_generator.abstract:

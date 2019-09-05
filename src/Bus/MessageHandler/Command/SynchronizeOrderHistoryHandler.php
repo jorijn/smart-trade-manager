@@ -4,7 +4,6 @@ namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\SynchronizeOrderHistoryCommand;
 use App\Event\OrderUpdatedEvent;
-use App\Exception\BinanceApiException;
 use App\Model\ExchangeOcoOrder;
 use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -138,11 +137,6 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
             ],
         ])->toArray(false);
 
-        // TODO maybe create a listener for this? -> extract logic
-        if (isset($response['code'])) {
-            throw new BinanceApiException($response['msg'], $response['code']);
-        }
-
         return $response;
     }
 
@@ -164,11 +158,6 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
                     'orderListId' => $order->getOrderListId(),
                 ],
             ])->toArray(false);
-
-            // TODO maybe create a listener for this? -> extract logic
-            if (isset($response['code'])) {
-                throw new BinanceApiException($response['msg'], $response['code']);
-            }
 
             $order
                 ->setListStatusType($response['listStatusType'])

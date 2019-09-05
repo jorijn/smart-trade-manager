@@ -3,7 +3,6 @@
 namespace App\Bus\MessageHandler\Query;
 
 use App\Bus\Message\Query\BalanceQuery;
-use App\Exception\BinanceApiException;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -40,11 +39,6 @@ class BalanceHandler
         $response = $this->httpClient->request('GET', 'v3/account', [
             'extra' => ['security_type' => 'USER_DATA'],
         ])->toArray(false);
-
-        // TODO maybe create a listener for this? -> extract logic
-        if (isset($response['code'])) {
-            throw new BinanceApiException($response['msg'], $response['code']);
-        }
 
         return array_reduce($response['balances'], static function (array $balances, array $asset) {
             $balances[$asset['asset']] = ['free' => $asset['free'], 'locked' => $asset['locked']];

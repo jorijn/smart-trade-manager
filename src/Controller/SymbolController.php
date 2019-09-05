@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Component\ExchangePriceFormatter;
-use App\Exception\BinanceApiException;
 use App\Model\Symbol;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -60,11 +59,6 @@ class SymbolController
         $response = $this->httpClient->request('GET', 'v3/account', [
             'extra' => ['security_type' => 'USER_DATA'],
         ])->toArray(false);
-
-        // TODO maybe create a listener for this? -> extract logic
-        if (isset($response['code'])) {
-            throw new BinanceApiException($response['msg'], $response['code']);
-        }
 
         $free = $locked = '0';
         foreach ($response['balances'] as $balance) {

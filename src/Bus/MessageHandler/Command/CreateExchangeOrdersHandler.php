@@ -4,6 +4,7 @@ namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\CreateExchangeOrdersCommand;
 use App\Event\OrderCreatedEvent;
+use App\Exception\BinanceApiException;
 use App\Model\ExchangeOcoOrder;
 use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -63,22 +64,17 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
         foreach ($command->getOrders() as $order) {
             $this->logger->info('dispatching order', ['order' => $order]);
 
-            $result = $this->binanceApiClient->request('POST', $order->getEndpoint(), [
-                'extra' => ['security_type' => 'TRADE'],
-                'body' => $order->toApiAttributes(),
-            ]);
-
-            $result = $result->toArray(false);
-
-            // TODO maybe create a listener for this? -> extract logic
-            if (isset($result['code'])) {
+            try {
+                $result = $this->binanceApiClient->request('POST', $order->getEndpoint(), [
+                    'extra' => ['security_type' => 'TRADE'],
+                    'body' => $order->toApiAttributes(),
+                ])->toArray(false);
+            } catch (BinanceApiException $exception) {
                 $this->logger->error('failed to create order', [
                     'order' => $order,
-                    'code' => $result['code'],
-                    'reason' => $result['msg'],
+                    'code' => $exception->getCode(),
+                    'reason' => $exception->getMessage(),
                 ]);
-
-                continue;
             }
 
             switch (get_class($order)) {
