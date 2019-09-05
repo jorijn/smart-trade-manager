@@ -17,6 +17,7 @@ services:
     depends_on:
       - db
       - queue
+      - cache
   stream-processor:
     build:
       context: .
@@ -35,6 +36,7 @@ services:
     depends_on:
       - db
       - queue
+      - cache
   webserver:
     build:
       context: .
@@ -65,15 +67,19 @@ services:
     depends_on:
       - db
       - queue
+      - cache
   db:
     image: postgres:alpine
+    restart: always
     env_file:
       - .env.local
     volumes:
       - "data-pgsql:/var/lib/postgresql/data"
   queue:
     image: rabbitmq:alpine
+    restart: always
     volumes:
       - "data-rabbitmq:/var/lib/rabbitmq"
   cache:
     image: redis:alpine
+    restart: always
