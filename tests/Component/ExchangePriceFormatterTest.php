@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\App\Component;
+namespace App\Tests\Component;
 
 use App\Component\ExchangePriceFormatter;
 use App\Exception\FilterNotFoundException;

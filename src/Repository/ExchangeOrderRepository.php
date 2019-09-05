@@ -82,10 +82,12 @@ class ExchangeOrderRepository extends EntityRepository
             ->where('o.status IN (:allowedStatus)')
             ->andWhere('o.takeProfit IS NULL')
             ->andWhere('o.stopPrice IS NOT NULL')
+            ->andWhere('o.side = :typeSell')
             ->andWhere('o.trade = :trade');
 
         $qb->setParameter('allowedStatus', self::ALLOWED_ORDER_STATUS, Connection::PARAM_STR_ARRAY);
         $qb->setParameter('trade', $trade);
+        $qb->setParameter('typeSell', 'SELL');
 
         return $qb->getQuery()->execute();
     }

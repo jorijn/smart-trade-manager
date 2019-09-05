@@ -16,7 +16,7 @@ class ErrorHandlerHttpClientDecorator extends AbstractHttpClientDecorator
 
         $data = $response->toArray(false);
         if (isset($data['code'])) {
-            throw new BinanceApiException($response['msg'], $response['code']);
+            throw new BinanceApiException($data['msg'], $data['code']);
         }
 
         return $response;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\App\Bus\MessageHandler\Command;
+namespace App\Tests\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\CancelExchangeOrdersCommand;
 use App\Bus\Message\Command\CreateExchangeOrdersCommand;
@@ -24,6 +24,9 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 
+/**
+ * @coversDefaultClass \App\Bus\MessageHandler\Command\EvaluatePositionsHandler
+ */
 class EvaluatePositionsHandlerTest extends TestCase
 {
     /** @var MockObject|CacheItemPoolInterface */
@@ -118,8 +121,12 @@ class EvaluatePositionsHandlerTest extends TestCase
      *
      * @return ExchangeOrder
      */
-    protected function createOrder(string $quantity, string $filledQuantity, string $status, int $id = null): ExchangeOrder
-    {
+    protected function createOrder(
+        string $quantity,
+        string $filledQuantity,
+        string $status,
+        int $id = null
+    ): ExchangeOrder {
         return
             (new ExchangeOrder())
                 ->setStatus($status)
@@ -140,6 +147,13 @@ class EvaluatePositionsHandlerTest extends TestCase
         $this->trade->expects(self::once())->method('getTakeProfits')->willReturn([1]); // should only trigger the count
         $this->orderRepository->expects(self::once())->method('findTakeProfitOrders')->with($this->trade)->willReturn([]);
 
+        $this->assertNewOrdersAreBeingGenerated();
+
+        $this->handler->__invoke($this->command);
+    }
+
+    protected function assertNewOrdersAreBeingGenerated(): void
+    {
         $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
         $stamp = new HandledStamp($sellOrders, __CLASS__);
         $envelope = new Envelope(new \stdClass(), [$stamp]);
@@ -160,8 +174,6 @@ class EvaluatePositionsHandlerTest extends TestCase
             return $command->getOrders() === $sellOrders;
         }))
             ->willReturn(new Envelope(new \stdClass()));
-
-        $this->handler->__invoke($this->command);
     }
 
     public function testAllCancelledSells(): void
@@ -180,26 +192,7 @@ class EvaluatePositionsHandlerTest extends TestCase
             $this->createOrder('0.00001', '0.00000', 'CANCELLED'),
         ]);
 
-        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
-        $stamp = new HandledStamp($sellOrders, __CLASS__);
-        $envelope = new Envelope(new \stdClass(), [$stamp]);
-
-        $this->queryBus
-            ->expects(self::once())
-            ->method('dispatch')
-            ->with(self::callback(function (SellOrderQuery $sellOrderQuery) {
-                return $sellOrderQuery->getTradeId() === $this->tradeId;
-            }))
-            ->willReturn($envelope);
-
-        $this->commandBus->expects(self::once())->method('dispatch')->with(self::callback(static function (
-            CreateExchangeOrdersCommand $command
-        ) use (
-            $sellOrders
-        ) {
-            return $command->getOrders() === $sellOrders;
-        }))
-            ->willReturn(new Envelope(new \stdClass()));
+        $this->assertNewOrdersAreBeingGenerated();
 
         $this->handler->__invoke($this->command);
     }
@@ -359,10 +352,6 @@ class EvaluatePositionsHandlerTest extends TestCase
             $this->createOrder('0.00004', '0.00000', 'NEW'),
         ]);
 
-        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
-        $stamp = new HandledStamp($sellOrders, __CLASS__);
-        $envelope = new Envelope(new \stdClass(), [$stamp]);
-
         $this->commandBus->expects(self::never())->method('dispatch');
         $this->queryBus->expects(self::never())->method('dispatch');
 
@@ -417,6 +406,145 @@ class EvaluatePositionsHandlerTest extends TestCase
                 return $sellOrderQuery->getTradeId() === $this->tradeId;
             }))
             ->willReturn($envelope);
+
+        $this->handler->__invoke($this->command);
+    }
+
+    public function testTradeHasStopLossNoSellOrdersYet(): void
+    {
+        $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
+        $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
+            $this->createOrder('0.00001', '0.00001', 'FILLED'),
+        ]);
+
+        $this->trade->expects(self::once())->method('getTakeProfits')->willReturn([]);
+        $this->trade->expects(self::once())->method('getStoploss')->willReturn('0.'.mt_rand());
+
+        $this->orderRepository->expects(self::once())->method('findStopLossOrders')->willReturn([]);
+
+        $this->assertNewOrdersAreBeingGenerated();
+
+        $this->handler->__invoke($this->command);
+    }
+
+    public function testTradeHasStopLossAllSellAreCancelled(): void
+    {
+        $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
+        $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
+            $this->createOrder('0.00001', '0.00001', 'FILLED'),
+        ]);
+
+        $this->trade->expects(self::once())->method('getTakeProfits')->willReturn([]);
+        $this->trade->expects(self::once())->method('getStoploss')->willReturn('0.'.mt_rand());
+
+        $this->orderRepository->expects(self::once())->method('findStopLossOrders')->willReturn([
+            $this->createOrder('0.00001', '0.00000', 'CANCELLED'),
+            $this->createOrder('0.00001', '0.00000', 'CANCELLED'),
+        ]);
+
+        $this->assertNewOrdersAreBeingGenerated();
+
+        $this->handler->__invoke($this->command);
+    }
+
+    public function testTradeHasStopLossNoFilledSellOrdersYet(): void
+    {
+        $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
+        $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
+            $this->createOrder('0.00001', '0.00001', 'FILLED'),
+            $this->createOrder('0.00002', '0.00001', 'PARTIALLY_FILLED'),
+            $this->createOrder('0.00001', '0.00000', 'NEW'),
+        ]);
+
+        $this->trade->expects(self::once())->method('getTakeProfits')->willReturn([]);
+        $this->trade->expects(self::once())->method('getStoploss')->willReturn('0.'.mt_rand());
+
+        $this->orderRepository->expects(self::once())->method('findStopLossOrders')->willReturn([
+            $this->createOrder('0.00002', '0.00000', 'NEW'),
+        ]);
+
+        $this->commandBus->expects(self::never())->method('dispatch');
+        $this->queryBus->expects(self::never())->method('dispatch');
+
+        $this->handler->__invoke($this->command);
+    }
+
+    public function testTradeHasStopLossNoFilledSellOrdersYetNewAqcuired(): void
+    {
+        $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
+        $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
+            $this->createOrder('0.00001', '0.00001', 'FILLED'),
+            $this->createOrder('0.00002', '0.00002', 'PARTIALLY_FILLED'),
+            $this->createOrder('0.00001', '0.00000', 'NEW'),
+        ]);
+
+        $this->trade->expects(self::once())->method('getTakeProfits')->willReturn([]);
+        $this->trade->expects(self::once())->method('getStoploss')->willReturn('0.'.mt_rand());
+
+        $this->orderRepository->expects(self::once())->method('findStopLossOrders')->willReturn([
+            $a = $this->createOrder('0.00002', '0.00000', 'NEW'),
+        ]);
+
+        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
+        $stamp = new HandledStamp($sellOrders, __CLASS__);
+        $envelope = new Envelope(new \stdClass(), [$stamp]);
+
+        $this->commandBus->expects(self::exactly(2))->method('dispatch')->withConsecutive(
+            [
+                self::callback(static function (
+                    CancelExchangeOrdersCommand $command
+                ) use ($a) {
+                    self::assertContains($a, $command->getOrders());
+
+                    return true;
+                }),
+            ],
+            [
+                self::callback(static function (
+                    CreateExchangeOrdersCommand $command
+                ) use (
+                    $sellOrders
+                ) {
+                    return $command->getOrders() === $sellOrders;
+                }),
+            ]
+        )
+            ->willReturn(new Envelope(new \stdClass()));
+
+        $this->queryBus
+            ->expects(self::once())
+            ->method('dispatch')
+            ->with(self::callback(function (SellOrderQuery $sellOrderQuery) {
+                return $sellOrderQuery->getTradeId() === $this->tradeId;
+            }))
+            ->willReturn($envelope);
+
+        $this->handler->__invoke($this->command);
+    }
+
+    public function testTradeHasStopLossPartiallyFilledSellOrders(): void
+    {
+        $this->tradeRepository->method('getPendingTrades')->willReturn([$this->trade]);
+        $this->orderRepository->expects(self::once())->method('findBuyOrders')->with($this->trade)->willReturn([
+            $this->createOrder('0.00001', '0.00001', 'FILLED'),
+            $this->createOrder('0.00002', '0.00002', 'FILLED'),
+        ]);
+
+        $this->trade->expects(self::once())->method('getTakeProfits')->willReturn([]);
+        $this->trade->expects(self::once())->method('getStoploss')->willReturn('0.'.mt_rand());
+
+        $this->orderRepository->expects(self::once())->method('findStopLossOrders')->willReturn([
+            $this->createOrder('0.00002', '0.00000', 'CANCELLED'),
+            $this->createOrder('0.00002', '0.00001', 'PARTIALLY_FILLED'),
+        ]);
+
+        $this->commandBus->expects(self::never())->method('dispatch');
+        $this->queryBus->expects(self::never())->method('dispatch');
+
+        $this->logger->expects(self::once())->method('info')->with('stop loss hit, closing trade');
+        $this->trade->expects(self::once())->method('setActive')->with(false);
+        $this->manager->expects(self::once())->method('persist')->with($this->trade);
+        $this->manager->expects(self::once())->method('flush');
 
         $this->handler->__invoke($this->command);
     }

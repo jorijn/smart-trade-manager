@@ -233,7 +233,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                 );
 
                 // did the stop loss order got hit somehow?
-                if (bccomp('0', $lostAmount, $stepScale) === 1) {
+                if (bccomp($lostAmount, '0', $stepScale) === 1) {
                     $this->logger->info('stop loss hit, closing trade', ['trade_id' => $trade->getId()]);
                     $trade->setActive(false);
                     $this->manager->persist($trade);
@@ -254,13 +254,15 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                     );
 
                     // did we acquire more quantity than is currently put in stop-loss order(s)?
+                    // -> send out new stop-loss order(s)
                     if (bccomp($buyQuantityFilled, $quantityProtectedInSL, $stepScale) === 1) {
-                        // cancel them
-                        $this->cancelOrders(...$activeSlOrders);
-                    }
+                        if (count($activeSlOrders) > 0) {
+                            // cancel them
+                            $this->cancelOrders(...$activeSlOrders);
+                        }
 
-                    // send out new stop-loss order(s)
-                    $this->createSellOrders($trade);
+                        $this->createSellOrders($trade);
+                    }
                 }
             }
         }
