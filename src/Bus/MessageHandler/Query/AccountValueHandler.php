@@ -64,7 +64,7 @@ class AccountValueHandler implements LoggerAwareInterface
             array_keys($balances),
             function (string $value, string $asset) use ($balances, $prices) {
                 $quantity = bcadd($balances[$asset]['free'], $balances[$asset]['locked'], 8);
-                $worth = $this->getPrice($prices, $quantity, self::DEFAULT_ASSET, $asset);
+                $worth = $this->getWorth($prices, $quantity, self::DEFAULT_ASSET, $asset);
 
                 return bcadd($value, $worth, 8);
             },
@@ -73,7 +73,7 @@ class AccountValueHandler implements LoggerAwareInterface
 
         // then, enrich the other assets with the default asset
         foreach (array_diff($uniqueQuoteAssets, array_keys($accountValue)) as $quoteAssetToCalculate) {
-            $accountValue[$quoteAssetToCalculate] = $this->getPrice(
+            $accountValue[$quoteAssetToCalculate] = $this->getWorth(
                 $prices,
                 $accountValue[self::DEFAULT_ASSET],
                 $quoteAssetToCalculate,
@@ -92,8 +92,12 @@ class AccountValueHandler implements LoggerAwareInterface
      *
      * @return string
      */
-    protected function getPrice(array $prices, string $quantity, string $asset, string $quoteAsset): string
+    protected function getWorth(array $prices, string $quantity, string $asset, string $quoteAsset): string
     {
+        if ($asset === $quoteAsset) {
+            return $quantity;
+        }
+
         if (array_key_exists($quoteAsset.$asset, $prices)) {
             return bcmul($quantity, $prices[$quoteAsset.$asset], 8);
         }
