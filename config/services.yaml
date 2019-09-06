@@ -336,14 +336,9 @@ services:
       - "@logger"
     tags:
       - {
-          name: kernel.event_listener,
-          event: App\Event\OrderUpdatedEvent,
-          method: "onOrderChanged",
-        }
-      - {
-          name: kernel.event_listener,
-          event: App\Event\OrderCreatedEvent,
-          method: "onOrderChanged",
+          name: doctrine.event_listener,
+          event: postPersist,
+          method: "postPersist",
         }
 
   App\EventListener\JsonRequestBodyEventListener:

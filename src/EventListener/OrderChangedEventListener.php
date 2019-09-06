@@ -4,6 +4,7 @@ namespace App\EventListener;
 
 use App\Bus\Message\Command\EvaluatePositionsCommand;
 use App\Event\AbstractOrderEvent;
+use App\Model\ExchangeOrderInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
@@ -34,13 +35,13 @@ class OrderChangedEventListener implements LoggerAwareInterface
         $this->setLogger($logger);
     }
 
-    /**
-     * @param AbstractOrderEvent $event
-     *
-     * @throws InvalidArgumentException
-     */
-    public function onOrderChanged(AbstractOrderEvent $event): void
+    public function postPersist(LifecycleEventArgs $args): void
     {
+        $entity = $args->getObject();
+        if (!$entity instanceof ExchangeOrderInterface) {
+            return;
+        }
+
         $command = new EvaluatePositionsCommand();
 
         // save latest debounce key, purpose of this piece of code is to check in the handler if it's the latest,
@@ -52,7 +53,7 @@ class OrderChangedEventListener implements LoggerAwareInterface
 
         $this->logger->info(
             'order update event received, triggering evaluation of positions',
-            ['order_id' => $event->getOrder()->getOrderId()]
+            [$entity->getAttributeIdentifier() => $entity->getAttributeIdentifierValue()]
         );
 
         // dispatch it to the queue and set it to be executed in 10 seconds
