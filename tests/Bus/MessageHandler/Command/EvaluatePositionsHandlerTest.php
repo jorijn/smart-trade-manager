@@ -9,6 +9,7 @@ use App\Bus\Message\Query\SellOrderQuery;
 use App\Bus\MessageHandler\Command\EvaluatePositionsHandler;
 use App\Component\ExchangePriceFormatter;
 use App\Model\ExchangeOrder;
+use App\Model\ExchangeOrderInterface;
 use App\Model\Symbol;
 use App\Model\Trade;
 use App\Repository\ExchangeOrderRepository;
@@ -154,7 +155,7 @@ class EvaluatePositionsHandlerTest extends TestCase
 
     protected function assertNewOrdersAreBeingGenerated(): void
     {
-        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
+        $sellOrders = [$this->createMock(ExchangeOrderInterface::class)];
         $stamp = new HandledStamp($sellOrders, __CLASS__);
         $envelope = new Envelope(new \stdClass(), [$stamp]);
 
@@ -245,7 +246,7 @@ class EvaluatePositionsHandlerTest extends TestCase
             $this->createOrder('0.00002', '0.00002', 'FILLED'),
         ]);
 
-        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
+        $sellOrders = [$this->createMock(ExchangeOrderInterface::class)];
         $stamp = new HandledStamp($sellOrders, __CLASS__);
         $envelope = new Envelope(new \stdClass(), [$stamp]);
 
@@ -300,7 +301,7 @@ class EvaluatePositionsHandlerTest extends TestCase
             $this->createOrder('0.00003', '0.00003', 'FILLED'),
         ]);
 
-        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
+        $sellOrders = [$this->createMock(ExchangeOrderInterface::class)];
         $stamp = new HandledStamp($sellOrders, __CLASS__);
         $envelope = new Envelope(new \stdClass(), [$stamp]);
 
@@ -372,7 +373,7 @@ class EvaluatePositionsHandlerTest extends TestCase
             $a = $this->createOrder('0.00003', '0.00000', 'NEW'),
         ]);
 
-        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
+        $sellOrders = [$this->createMock(ExchangeOrderInterface::class)];
         $stamp = new HandledStamp($sellOrders, __CLASS__);
         $envelope = new Envelope(new \stdClass(), [$stamp]);
 
@@ -485,7 +486,7 @@ class EvaluatePositionsHandlerTest extends TestCase
             $a = $this->createOrder('0.00002', '0.00000', 'NEW'),
         ]);
 
-        $sellOrders = ['b'.mt_rand(), 'c'.mt_rand()];
+        $sellOrders = [$this->createMock(ExchangeOrderInterface::class)];
         $stamp = new HandledStamp($sellOrders, __CLASS__);
         $envelope = new Envelope(new \stdClass(), [$stamp]);
 

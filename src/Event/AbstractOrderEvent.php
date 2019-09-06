@@ -2,25 +2,25 @@
 
 namespace App\Event;
 
-use App\Model\ExchangeOrder;
+use App\Model\ExchangeOrderInterface;
 
 abstract class AbstractOrderEvent
 {
-    /** @var ExchangeOrder */
+    /** @var ExchangeOrderInterface */
     protected $order;
 
     /**
-     * @param ExchangeOrder $order
+     * @param ExchangeOrderInterface $order
      */
-    public function __construct(ExchangeOrder $order)
+    public function __construct(ExchangeOrderInterface $order)
     {
         $this->order = $order;
     }
 
     /**
-     * @return ExchangeOrder
+     * @return ExchangeOrderInterface
      */
-    public function getOrder(): ExchangeOrder
+    public function getOrder(): ExchangeOrderInterface
     {
         return $this->order;
     }

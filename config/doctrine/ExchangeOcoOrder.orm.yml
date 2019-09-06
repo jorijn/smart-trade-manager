@@ -53,6 +53,11 @@ App\Model\ExchangeOcoOrder:
     updatedAt:
       type: bigint
       nullable: true
+  oneToMany:
+    orders:
+      targetEntity: ExchangeOrder
+      mappedBy: orderList
+      cascade: [persist]
   manyToOne:
     trade:
       targetEntity: Trade

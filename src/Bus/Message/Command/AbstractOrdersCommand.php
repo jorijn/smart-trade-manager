@@ -12,7 +12,7 @@ abstract class AbstractOrdersCommand
     /**
      * @param ExchangeOrderInterface ...$orders
      */
-    public function __construct(...$orders)
+    public function __construct(ExchangeOrderInterface ...$orders)
     {
         $this->orders = $orders;
     }

@@ -2,10 +2,26 @@
 
 namespace App\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
 {
+    /** @var array */
+    protected const UPDATE_MAP = [
+        'executedQty' => 'setFilledQuantity',
+        'cummulativeQuoteQty' => 'setFilledQuoteQuantity',
+        'status' => 'setStatus',
+        'orderId' => 'setOrderId',
+        'transactTime' => 'setUpdatedAt',
+        'origQty' => 'setQuantity',
+        'orderReports' => 'setOrderReports',
+        'orderListId' => 'setOrderListId',
+        'listStatusType' => 'setListStatusType',
+        'listOrderStatus' => 'setListOrderStatus',
+        'transactionTime' => 'setUpdatedAt',
+    ];
+
     /** @var string */
     protected $orderListId;
     /** @var string */
@@ -36,6 +52,61 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
     protected $updatedAt;
     /** @var TakeProfit */
     protected $takeProfit;
+    /** @var ExchangeOrder[] */
+    protected $orders;
+
+    public function __construct(array $data)
+    {
+        $this->orders = new ArrayCollection();
+
+        $this->update($data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update(array $data): void
+    {
+        foreach ($data as $key => $value) {
+            if (array_key_exists($key, self::UPDATE_MAP)) {
+                $this->{self::UPDATE_MAP[$key]}($value);
+            }
+        }
+    }
+
+    /**
+     * @param array $orderReports
+     */
+    public function setOrderReports(array $orderReports)
+    {
+        foreach ($orderReports as $orderReport) {
+            $order = new ExchangeOrder();
+            $order->setOrderList($this);
+            $order->setTrade($this->getTrade());
+            $order->setTakeProfit($this->getTakeProfit());
+            $order->update($orderReport);
+
+            $this->orders->add($order);
+        }
+    }
+
+    /**
+     * @return Trade
+     */
+    public function getTrade(): Trade
+    {
+        return $this->trade;
+    }
+
+    /**
+     * @param Trade $trade
+     */
+    public function setTrade(Trade $trade): ExchangeOcoOrder
+    {
+        $this->trade = $trade;
+
+        return $this;
+    }
 
     /**
      * @return TakeProfit
@@ -73,26 +144,6 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
     public function setUpdatedAt(int $updatedAt): ExchangeOcoOrder
     {
         $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getOrderListId(): ?string
-    {
-        return $this->orderListId;
-    }
-
-    /**
-     * @param string $orderListId
-     *
-     * @return ExchangeOcoOrder
-     */
-    public function setOrderListId(string $orderListId): ExchangeOcoOrder
-    {
-        $this->orderListId = $orderListId;
 
         return $this;
     }
@@ -180,7 +231,7 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
     /**
      * @return string
      */
-    public function getSymbol(): ?string
+    public function getSymbol(): string
     {
         return $this->symbol;
     }
@@ -318,24 +369,6 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
     }
 
     /**
-     * @return Trade
-     */
-    public function getTrade(): Trade
-    {
-        return $this->trade;
-    }
-
-    /**
-     * @param Trade $trade
-     */
-    public function setTrade(Trade $trade): ExchangeOcoOrder
-    {
-        $this->trade = $trade;
-
-        return $this;
-    }
-
-    /**
      * @return array
      */
     public function toApiAttributes(): array
@@ -389,5 +422,41 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
 
             return $value;
         }, array_diff_key(get_object_vars($this), array_flip(['trade', 'takeProfit'])));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttributeIdentifier(): string
+    {
+        return 'orderListId';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttributeIdentifierValue(): ?string
+    {
+        return $this->getOrderListId();
+    }
+
+    /**
+     * @return string
+     */
+    public function getOrderListId(): ?string
+    {
+        return $this->orderListId;
+    }
+
+    /**
+     * @param string $orderListId
+     *
+     * @return ExchangeOcoOrder
+     */
+    public function setOrderListId(string $orderListId): ExchangeOcoOrder
+    {
+        $this->orderListId = $orderListId;
+
+        return $this;
     }
 }

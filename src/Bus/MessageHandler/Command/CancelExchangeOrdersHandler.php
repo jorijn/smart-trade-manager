@@ -3,9 +3,7 @@
 namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\CancelExchangeOrdersCommand;
-use App\Event\OrderCancelledEvent;
 use App\Exception\BinanceApiException;
-use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
@@ -46,41 +44,33 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
     {
         $this->logger->info('starting dispatching of order cancellation batch');
 
-        /** @var ExchangeOrder $order */
         foreach ($command->getOrders() as $order) {
-            $this->logger->info('dispatching order cancellation', ['order_id' => $order->getOrderId()]);
+            $logContext = [$order->getAttributeIdentifier() => $order->getAttributeIdentifierValue()];
+            $this->logger->info('dispatching order cancellation', $logContext);
 
             try {
                 $result = $this->binanceApiClient->request('DELETE', $order->getEndpoint(), [
                     'extra' => ['security_type' => 'TRADE'],
                     'body' => [
                         'symbol' => $order->getSymbol(),
-                        'orderId' => $order->getOrderId(),
+                        $order->getAttributeIdentifier() => $order->getAttributeIdentifierValue(),
                     ],
                 ])->toArray(false);
+
+                $order->update($result);
+                $this->manager->persist($order);
             } catch (BinanceApiException $exception) {
-                $this->logger->error('failed to cancel order', [
-                    'order_id' => $order->getOrderId(),
-                    'code' => $exception->getCode(),
-                    'reason' => $exception->getMessage(),
-                ]);
+                $this->logger->error(
+                    'failed to cancel order',
+                    $logContext + [
+                        'code' => $exception->getCode(),
+                        'reason' => $exception->getMessage(),
+                    ]
+                );
             }
-
-            /* @var ExchangeOrder $order */
-            $order
-                ->setFilledQuantity($result['executedQty'] ?? null)
-                ->setFilledQuoteQuantity($result['cummulativeQuoteQty'] ?? null);
-
-            if (isset($result['status'])) {
-                $order->setStatus($result['status']);
-            }
-
-            $this->manager->persist($order);
-            $this->manager->flush();
-
-            $this->dispatcher->dispatch(new OrderCancelledEvent($order));
         }
 
+        $this->manager->flush();
         $this->logger->notice('end dispatching of new order batch');
     }
 }

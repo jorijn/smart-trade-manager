@@ -16,6 +16,22 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
     public const BUY = 'BUY';
     public const SELL = 'SELL';
 
+    /** @var array */
+    protected const UPDATE_MAP = [
+        'executedQty' => 'setFilledQuantity',
+        'cummulativeQuoteQty' => 'setFilledQuoteQuantity',
+        'status' => 'setStatus',
+        'orderId' => 'setOrderId',
+        'transactTime' => 'setUpdatedAt',
+        'origQty' => 'setQuantity',
+        'symbol' => 'setSymbol',
+        'price' => 'setPrice',
+        'timeInForce' => 'setTimeInForce',
+        'type' => 'setType',
+        'side' => 'setSide',
+        'stopPrice' => 'stopPrice',
+    ];
+
     /** @var string */
     protected $symbol;
     /** @var string */
@@ -372,26 +388,6 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
     /**
      * @return string|null
      */
-    public function getOrderId(): string
-    {
-        return $this->orderId;
-    }
-
-    /**
-     * @param string|null $orderId
-     *
-     * @return ExchangeOrder
-     */
-    public function setOrderId(string $orderId): ExchangeOrder
-    {
-        $this->orderId = $orderId;
-
-        return $this;
-    }
-
-    /**
-     * @return string|null
-     */
     public function getStatus(): ?string
     {
         return $this->status;
@@ -476,5 +472,53 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
         }
 
         return $attributes;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttributeIdentifier(): string
+    {
+        return 'orderId';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttributeIdentifierValue(): ?string
+    {
+        return $this->getOrderId();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getOrderId(): string
+    {
+        return $this->orderId;
+    }
+
+    /**
+     * @param string|null $orderId
+     *
+     * @return ExchangeOrder
+     */
+    public function setOrderId(string $orderId): ExchangeOrder
+    {
+        $this->orderId = $orderId;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update(array $data): void
+    {
+        foreach ($data as $key => $value) {
+            if (array_key_exists($key, self::UPDATE_MAP)) {
+                $this->{self::UPDATE_MAP[$key]}($value);
+            }
+        }
     }
 }
