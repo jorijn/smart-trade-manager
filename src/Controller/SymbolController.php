@@ -2,20 +2,21 @@
 
 namespace App\Controller;
 
+use App\Bus\Message\Query\BalanceQuery;
+use App\Bus\Message\Query\SymbolPriceQuery;
 use App\Component\ExchangePriceFormatter;
 use App\Model\Symbol;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Component\Messenger\HandleTrait;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class SymbolController
 {
+    use HandleTrait;
+
     /** @var HttpClientInterface */
     protected $httpClient;
     /** @var ObjectManager */
@@ -27,25 +28,22 @@ class SymbolController
      * @param HttpClientInterface    $httpClient
      * @param ObjectManager          $manager
      * @param ExchangePriceFormatter $formatter
+     * @param MessageBusInterface    $queryBus
      */
     public function __construct(
         HttpClientInterface $httpClient,
         ObjectManager $manager,
-        ExchangePriceFormatter $formatter
+        ExchangePriceFormatter $formatter,
+        MessageBusInterface $queryBus
     ) {
         $this->httpClient = $httpClient;
         $this->manager = $manager;
         $this->formatter = $formatter;
+        $this->messageBus = $queryBus;
     }
 
     /**
      * @param string $strSymbol
-     *
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
-     * @throws ClientExceptionInterface
      *
      * @return JsonResponse
      */
@@ -56,23 +54,24 @@ class SymbolController
             throw new NotFoundHttpException(sprintf('symbol %s is not found', $strSymbol));
         }
 
-        $response = $this->httpClient->request('GET', 'v3/account', [
-            'extra' => ['security_type' => 'USER_DATA'],
-        ])->toArray(false);
+        $balances = $this->handle(new BalanceQuery());
+        $prices = $this->handle(new SymbolPriceQuery());
+        $quoteAsset = $symbol->getQuoteAsset();
 
-        $free = $locked = '0';
-        foreach ($response['balances'] as $balance) {
-            if ($balance['asset'] === $symbol->getQuoteAsset()) {
-                $free = $balance['free'];
-                $locked = $balance['locked'];
-            }
+        if (array_key_exists($quoteAsset, $balances)) {
+            $free = $balances[$quoteAsset]['free'];
+            $locked = $balances[$quoteAsset]['locked'];
+        }
+
+        if (array_key_exists($symbol->getSymbol(), $prices)) {
+            $price = $this->formatter->roundTicks($symbol, $prices[$symbol->getSymbol()]);
         }
 
         return new JsonResponse([
-            'balance_free' => $free,
-            'balance_locked' => $locked,
-            'account_value_in_usd' => '0',
+            'balance_free' => $free ?? 0,
+            'balance_locked' => $locked ?? 0,
             'symbol' => $symbol,
+            'price' => $price ?? null,
         ]);
     }
 

@@ -54,7 +54,7 @@ class ErrorHandlerHttpClientDecoratorTest extends TestCase
             ->method('toArray')
             ->willReturn([
                 'msg' => $exception->getMessage(),
-                'code' => $exception->getCode()
+                'code' => $exception->getCode(),
             ]);
 
         $httpClient = $this->createMock(HttpClientInterface::class);

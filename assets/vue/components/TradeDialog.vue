@@ -208,6 +208,7 @@ export default {
       takeProfitPercentage: null,
       quoteBalanceFree: 0,
       quoteBalanceLocked: 0,
+      currentPrice: null,
       symbolObject: {},
       loading: false,
       rangeLow: null,
@@ -232,7 +233,9 @@ export default {
   methods: {
     async startTrade() {
       if (!this.confirmation) {
-        this.confirmation = true;
+        this.$nextTick(() => {
+          this.confirmation = true;
+        });
         return;
       }
 
@@ -245,7 +248,7 @@ export default {
         await axios.post("/api/v1/trade", trade);
         this.loading = false;
 
-        this.$emit("tradeCreate");
+        this.$emit("trade-created");
       } catch (error) {
         this.loading = false;
       }
@@ -415,7 +418,7 @@ export default {
         additionalCriteria =
           this.portfolioRiskPercentage !== null &&
           this.portfolioRiskPercentage.length > 0 &&
-          parseFloat(this.portfolioRiskPercentage) <
+          parseFloat(this.portfolioRiskPercentage) <=
             parseFloat(this.portfolioLossThreshold);
       }
 
@@ -485,6 +488,9 @@ export default {
       this.symbolObject = response.data.symbol;
       this.quoteBalanceFree = response.data.balance_free;
       this.quoteBalanceLocked = response.data.balance_locked;
+      this.currentPrice = parseFloat(response.data.price);
+
+      this.rangeLow = this.currentPrice;
     }
   }
 };

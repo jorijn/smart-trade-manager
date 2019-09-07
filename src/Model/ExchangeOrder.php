@@ -23,6 +23,7 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
         'status' => 'setStatus',
         'orderId' => 'setOrderId',
         'transactTime' => 'setUpdatedAt',
+        'updateTime' => 'setUpdatedAt',
         'origQty' => 'setQuantity',
         'symbol' => 'setSymbol',
         'price' => 'setPrice',

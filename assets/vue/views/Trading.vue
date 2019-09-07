@@ -1,9 +1,10 @@
 <template>
   <div>
-    <trade-dialog :symbols="symbols" />
+    <trade-dialog v-on:trade-created="getActiveTrades" :symbols="symbols" />
     <v-row>
       <trade-overview
         @tradeCreate="getActiveTrades"
+        v-on:refresh-trade-list="getActiveTrades"
         :symbols="symbols"
         :loading="overviewLoading"
         :trades="trades"
@@ -23,7 +24,7 @@ export default {
   data() {
     return {
       trades: [],
-      overviewLoading: true,
+      overviewLoading: false,
       symbols: []
     };
   },
@@ -41,8 +42,8 @@ export default {
       this.overviewLoading = true;
 
       try {
-        this.overviewLoading = false;
         const result = await axios.get("/api/v1/trade");
+        this.overviewLoading = false;
         this.trades = result.data;
       } catch (error) {
         this.overviewLoading = false;

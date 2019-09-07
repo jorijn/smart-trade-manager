@@ -30,7 +30,7 @@ interface ExchangeOrderInterface
     public function getSymbol(): string;
 
     /**
-     * Update the order with an Exchange specific response
+     * Update the order with an Exchange specific response.
      *
      * @param array $data
      */

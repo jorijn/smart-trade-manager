@@ -2,6 +2,7 @@
 
 namespace App\OrderGenerator;
 
+use App\Model\ExchangeOrder;
 use App\Model\Symbol;
 use App\Model\Trade;
 
@@ -25,6 +26,39 @@ class TakeProfitSellOrderGenerator extends AbstractOrderGenerator
      */
     protected function execute(Trade $trade, Symbol $validatedSymbol): array
     {
-        return [];
+        $stepScale = $this->formatter->getStepScale($validatedSymbol);
+        $alreadyAcquired = $this->calculateAlreadyAcquired($trade, $stepScale);
+        $alreadySold = $this->calculateAlreadySold($trade, $stepScale);
+        $leftToSell = bcsub($alreadyAcquired, $alreadySold, $stepScale);
+
+        $sets = $this->calculatePossibleSellOrders($trade, $validatedSymbol, $stepScale, $alreadyAcquired, $leftToSell);
+
+        return $this->convertSetsIntoOrders($trade, $sets, $validatedSymbol);
+    }
+
+    /**
+     * @param Trade  $trade
+     * @param array  $sets
+     * @param Symbol $symbol
+     *
+     * @return array
+     */
+    protected function convertSetsIntoOrders(Trade $trade, array $sets, Symbol $symbol): array
+    {
+        $orders = [];
+        foreach ($sets as ['quantity' => $quantity, 'price' => $price, 'tp' => $takeProfit]) {
+            $order = new ExchangeOrder();
+            $order
+                ->setSymbol($symbol->getSymbol())
+                ->setSide('SELL')
+                ->setQuantity($this->formatter->roundStep($symbol, $quantity))
+                ->setPrice($this->formatter->roundTicks($symbol, $price))
+                ->setTrade($trade)
+                ->setTakeProfit($takeProfit);
+
+            $orders[] = $order;
+        }
+
+        return $orders;
     }
 }

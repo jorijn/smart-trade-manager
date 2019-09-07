@@ -92,10 +92,7 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
                     continue;
                 }
 
-                $order->setUpdatedAt($data['updateTime']);
-                $order->setStatus($data['status']);
-                $order->setFilledQuantity($data['executedQty'] ?? null);
-                $order->setFilledQuoteQuantity($data['cummulativeQuoteQty'] ?? null);
+                $order->update($data);
 
                 $this->manager->persist($order);
                 $this->logger->info('updated order info from exchange', $data);

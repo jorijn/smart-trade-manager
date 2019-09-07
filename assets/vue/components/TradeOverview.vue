@@ -4,6 +4,9 @@
       <v-toolbar color="secondary lighten-1" dark>
         <v-toolbar-title>Trades Overview</v-toolbar-title>
         <v-spacer></v-spacer>
+        <v-btn icon right @click="$emit('refresh-trade-list')">
+          <v-icon>fas fa-sync-alt</v-icon>
+        </v-btn>
       </v-toolbar>
       <v-card-text>
         <v-data-table
@@ -61,6 +64,24 @@
               {{ item.symbol.symbol }}
             </span>
           </template>
+          <template v-slot:item.actions="{ item }">
+            <v-menu bottom left>
+              <template v-slot:activator="{ on }">
+                <v-btn icon v-on="on">
+                  <v-icon>fas fa-ellipsis-v</v-icon>
+                </v-btn>
+              </template>
+
+              <v-list>
+                <v-list-item>
+                  <v-list-item-title>Update Stop Loss</v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-title>Close Trade</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
         </v-data-table>
       </v-card-text>
     </v-card>
@@ -81,12 +102,13 @@ export default {
     return {
       headers: [
         { value: "id", text: "ID" },
-        { value: "symbol", text: "Symbol" },
-        { value: "quantity", text: "Quantity" },
-        { value: "stoploss", text: "StopLoss" },
-        { value: "entry", text: "Entry (Range)" },
-        { value: "buy_orders", text: "Buy Orders Filled" },
-        { value: "takeprofits", text: "Take Profit" }
+        { value: "symbol", text: "Symbol", sortable: false },
+        { value: "quantity", text: "Quantity", sortable: false },
+        { value: "stoploss", text: "StopLoss", sortable: false },
+        { value: "entry", text: "Entry (Range)", sortable: false },
+        { value: "buy_orders", text: "Buy Orders Filled", sortable: false },
+        { value: "takeprofits", text: "Take Profit", sortable: false },
+        { value: "actions", text: null, sortable: false }
       ],
       values: []
     };

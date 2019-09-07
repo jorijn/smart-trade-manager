@@ -2,11 +2,29 @@
 
 namespace App\OrderGenerator;
 
+use App\Component\ExchangePriceFormatter;
+use App\Model\ExchangeOrder;
 use App\Model\Symbol;
 use App\Model\Trade;
+use Doctrine\Common\Persistence\ObjectManager;
 
 class StopLimitLossOrderGenerator extends AbstractOrderGenerator
 {
+    /** @var float */
+    protected $slRiskPercentage;
+
+    /**
+     * @param ExchangePriceFormatter $formatter
+     * @param ObjectManager          $manager
+     * @param float                  $slRiskPercentage
+     */
+    public function __construct(ExchangePriceFormatter $formatter, ObjectManager $manager, float $slRiskPercentage)
+    {
+        parent::__construct($formatter, $manager);
+
+        $this->slRiskPercentage = $slRiskPercentage;
+    }
+
     /**
      * @param Trade $trade
      *
@@ -25,6 +43,22 @@ class StopLimitLossOrderGenerator extends AbstractOrderGenerator
      */
     protected function execute(Trade $trade, Symbol $validatedSymbol): array
     {
-        return [];
+        $riskPercentage = ($this->slRiskPercentage / 100) + 1;
+
+        $stepScale = $this->formatter->getStepScale($validatedSymbol);
+        $alreadyAcquired = $this->calculateAlreadyAcquired($trade, $stepScale);
+
+        $order = new ExchangeOrder();
+        $order
+            ->setSide('SELL')
+            ->setSymbol($validatedSymbol->getSymbol())
+            ->setQuantity($this->formatter->roundStep($validatedSymbol, $alreadyAcquired))
+            ->setStopPrice($this->formatter->roundTicks(
+                $validatedSymbol,
+                bcdiv($trade->getStoploss(), (string) $riskPercentage, $this->formatter->getPriceScale($validatedSymbol))
+            ))
+            ->setTrade($trade);
+
+        return [$order];
     }
 }

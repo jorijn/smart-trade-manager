@@ -55,6 +55,21 @@ class TradeType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new Positive(),
+                    new Regex(self::PRICE_REGEX),
+                    new Callback(static function ($object, ExecutionContextInterface $context) {
+                        if ($object === null || $object === '') {
+                            return;
+                        }
+
+                        /** @var FormBuilderInterface $root */
+                        $root = $context->getRoot();
+                        /** @var Trade $data */
+                        $data = $root->getData();
+
+                        if ($object >= $data->getEntryLow()) {
+                            $context->addViolation('stop loss needs to be lower than entry low');
+                        }
+                    }),
                 ],
             ])
             ->add('symbol', ChoiceType::class, [
@@ -88,11 +103,14 @@ class TradeType extends AbstractType
                 'currency' => false,
                 'scale' => 10,
                 'required' => false,
-                'empty_data' => null,
                 'constraints' => [
                     new Positive(),
                     new Regex(self::PRICE_REGEX),
                     new Callback(static function ($object, ExecutionContextInterface $context) {
+                        if ($object === null || $object === '') {
+                            return;
+                        }
+
                         /** @var FormBuilderInterface $root */
                         $root = $context->getRoot();
                         /** @var Trade $data */

@@ -3,10 +3,9 @@
 namespace App\EventListener;
 
 use App\Bus\Message\Command\EvaluatePositionsCommand;
-use App\Event\AbstractOrderEvent;
 use App\Model\ExchangeOrderInterface;
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;

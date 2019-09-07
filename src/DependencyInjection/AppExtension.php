@@ -23,5 +23,6 @@ class AppExtension extends Extension
         $container->setParameter('app.config.exchange.ladder_size', $config['exchange']['ladder_size']);
         $container->setParameter('app.config.exchange.api_debugging_enabled', $config['exchange']['api_debugging_enabled']);
         $container->setParameter('app.config.exchange.portfolio_loss_threshold', $config['exchange']['portfolio_loss_threshold']);
+        $container->setParameter('app.config.exchange.stop_loss_risk_percentage', $config['exchange']['stop_loss_risk_percentage']);
     }
 }

@@ -9,6 +9,7 @@ use App\Form\Type\TradeType;
 use App\Model\Trade;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\HandleTrait;
@@ -75,11 +76,15 @@ class TradeController
             return new JsonResponse([]);
         }
 
+        /**
+         * @var string
+         * @var FormInterface $formField
+         */
         $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[$error->getCause()->getPropertyPath()] = $error->getMessage();
+        foreach ($form as $fieldName => $formField) {
+            $errors[$fieldName] = (string) $formField->getErrors(true);
         }
 
-        return new JsonResponse($errors, 422);
+        return new JsonResponse(array_filter($errors), 422);
     }
 }

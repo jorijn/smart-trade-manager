@@ -5,10 +5,16 @@ namespace App\OrderGenerator;
 use App\Component\ExchangePriceFormatter;
 use App\Exception\FilterNotFoundException;
 use App\Exception\SymbolNotFoundException;
+use App\Model\ExchangeOrder;
 use App\Model\Symbol;
 use App\Model\SymbolFilter;
+use App\Model\TakeProfit;
 use App\Model\Trade;
+use App\Repository\ExchangeOrderRepository;
+use App\Repository\SymbolRepository;
+use App\Repository\TradeRepository;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\Persistence\ObjectRepository;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
@@ -21,6 +27,12 @@ abstract class AbstractOrderGenerator implements OrderGeneratorInterface, Logger
     protected $formatter;
     /** @var ObjectManager */
     protected $manager;
+    /** @var TradeRepository|ObjectRepository */
+    protected $tradeRepository;
+    /** @var ExchangeOrderRepository|ObjectRepository */
+    protected $orderRepository;
+    /** @var SymbolRepository|ObjectRepository */
+    protected $symbolRepository;
 
     /**
      * @param ExchangePriceFormatter $formatter
@@ -30,6 +42,10 @@ abstract class AbstractOrderGenerator implements OrderGeneratorInterface, Logger
     {
         $this->formatter = $formatter;
         $this->manager = $manager;
+
+        $this->tradeRepository = $this->manager->getRepository(Trade::class);
+        $this->orderRepository = $this->manager->getRepository(ExchangeOrder::class);
+        $this->symbolRepository = $this->manager->getRepository(Symbol::class);
     }
 
     /**
@@ -93,5 +109,92 @@ abstract class AbstractOrderGenerator implements OrderGeneratorInterface, Logger
         }
 
         return $parameter;
+    }
+
+    /**
+     * @param Trade $trade
+     * @param int   $stepScale
+     *
+     * @return string
+     */
+    protected function calculateAlreadyAcquired(Trade $trade, int $stepScale): string
+    {
+        return array_reduce(
+            $this->orderRepository->findBuyOrders($trade),
+            static function (string $bought, ExchangeOrder $order) use (
+                $stepScale
+            ) {
+                return bcadd($bought, $order->getFilledQuantity(), $stepScale);
+            },
+            '0'
+        );
+    }
+
+    /**
+     * @param Trade $trade
+     * @param int   $stepScale
+     *
+     * @return string
+     */
+    protected function calculateAlreadySold(Trade $trade, int $stepScale): string
+    {
+        return array_reduce(
+            $this->orderRepository->findTakeProfitOrders($trade),
+            static function (string $sold, ExchangeOrder $order) use (
+                $stepScale
+            ) {
+                return bcadd($sold, $order->getFilledQuantity(), $stepScale);
+            },
+            '0'
+        );
+    }
+
+    /**
+     * @param Trade  $trade
+     * @param object $symbol
+     * @param int    $stepScale
+     * @param string $alreadyAcquired
+     * @param string $leftToSell
+     *
+     * @return array
+     */
+    protected function calculatePossibleSellOrders(
+        Trade $trade,
+        object $symbol,
+        int $stepScale,
+        string $alreadyAcquired,
+        string $leftToSell
+    ): array {
+        $takeProfits = $trade->getTakeProfits()->toArray();
+        $orders = [];
+
+        // sort them on price descending, so the furthers tp point comes first
+        usort($takeProfits, static function (TakeProfit $a, TakeProfit $b) {
+            return $b->getPrice() <=> $a->getPrice();
+        });
+
+        /** @var TakeProfit $takeProfit */
+        foreach ($takeProfits as $takeProfit) {
+            if ($takeProfit->getPercentage() >= 100) {
+                $size = $this->formatter->roundStep($symbol, $alreadyAcquired);
+            } else {
+                $size = bcmul(
+                    $alreadyAcquired,
+                    sprintf('0.%s', str_pad($takeProfit->getPercentage(), 2, STR_PAD_LEFT)),
+                    $stepScale
+                );
+            }
+
+            // if the desired chunk is less than what's left, override and break the loop
+            if (bccomp($size, $leftToSell, $stepScale) === 1) {
+                $orders[] = ['quantity' => $leftToSell, 'price' => $takeProfit->getPrice(), 'tp' => $takeProfit];
+                break;
+            }
+
+            $orders[] = ['quantity' => $size, 'price' => $takeProfit->getPrice(), 'tp' => $takeProfit];
+            $leftToSell = bcsub($leftToSell, $size, $stepScale);
+        }
+
+        return $orders;
     }
 }

@@ -239,6 +239,7 @@ services:
       - "@binance_api.client"
       - "@doctrine.orm.default_entity_manager"
       - "@app.component.exchange_price_formatter"
+      - "@query.bus"
     tags:
       - { name: controller.service_arguments }
 
@@ -312,12 +313,16 @@ services:
   app.order_generator.oco_sell:
     class: App\OrderGenerator\OcoSellOrderGenerator
     parent: app.order_generator.abstract
+    arguments:
+      - "%app.config.exchange.stop_loss_risk_percentage%"
     tags:
       - { name: "app.order_generator.sell", priority: 100 }
 
   app.order_generator.stop_limit_loss:
     class: App\OrderGenerator\StopLimitLossOrderGenerator
     parent: app.order_generator.abstract
+    arguments:
+      - "%app.config.exchange.stop_loss_risk_percentage%"
     tags:
       - { name: "app.order_generator.sell", priority: 50 }
 
