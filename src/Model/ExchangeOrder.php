@@ -30,7 +30,7 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
         'timeInForce' => 'setTimeInForce',
         'type' => 'setType',
         'side' => 'setSide',
-        'stopPrice' => 'stopPrice',
+        'stopPrice' => 'setStopPrice',
     ];
 
     /** @var string */
