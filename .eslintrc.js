@@ -14,17 +14,14 @@ module.exports = {
   },
   parserOptions: {
     ecmaVersion: 2018,
-    sourceType: "module"
+    sourceType: "module",
+    parser: "babel-eslint"
   },
   plugins: ["vue", "vuetify"],
-  rules: {
-    "vuetify/no-deprecated-classes": "error",
-    "vuetify/no-legacy-grid": "error"
-  },
-  "settings": {
+  settings: {
     "import/resolver": {
-      "node": {
-        "paths": ["assets/vue"]
+      node: {
+        paths: ["assets/vue"]
       }
     }
   }
