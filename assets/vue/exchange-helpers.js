@@ -17,6 +17,7 @@ export function getPrecision(float) {
 export function roundStep(qty, stepSize) {
   // Integers do not require rounding
   if (Number.isInteger(qty)) return qty;
+  if (typeof qty === "string") qty = parseFloat(qty);
   const qtyString = qty.toFixed(16);
   const desiredDecimals = Math.max(stepSize.indexOf("1") - 1, 0);
   const decimalIndex = qtyString.indexOf(".");
@@ -25,7 +26,7 @@ export function roundStep(qty, stepSize) {
 
 /**
  * rounds price to required precision
- * @param {float} price - price to round
+ * @param {number} price - price to round
  * @param {float} tickSize - tickSize as specified by exchangeInfo
  * @return {float} - number
  */

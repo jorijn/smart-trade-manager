@@ -18,11 +18,19 @@
           sort-by="id"
           :sort-desc="true"
         >
-          <template v-slot:expanded-item="{ headers }">
-            <td :colspan="headers.length">Peek-a-boo!</td>
+          <template v-slot:expanded-item="{ headers, item }">
+            <td class="pa-0 mr-0" :colspan="headers.length">
+              <trade-details
+                :orders="item.orders"
+                :asset="item.symbol.baseAsset"
+                :quoteAsset="item.symbol.quoteAsset"
+                :symbol="item.symbol"
+              ></trade-details>
+            </td>
           </template>
           <template v-slot:item.quantity="{ item }">
-            {{ item.quantity }} {{ item.symbol.quoteAsset }}
+            {{ item.quantity | roundStep(item.symbol) }}
+            {{ item.symbol.quoteAsset }}
           </template>
           <template v-slot:item.buy_orders="{ item }">
             {{ item.buy_orders_filled }} / {{ item.buy_orders_quantity }}
@@ -34,29 +42,33 @@
             }}%)
           </template>
           <template v-slot:item.takeprofits="{ item }">
-            <v-chip
+            <div
               class=""
               :key="price"
               v-for="{ percentage, price } in item.takeProfits"
             >
               <span
                 >Sell <strong>{{ percentage }}%</strong> at
-                <strong>{{ price }}</strong> {{ item.symbol.quoteAsset }}</span
+                <strong>{{ price | roundTicks(item.symbol) }}</strong>
+                {{ item.symbol.quoteAsset }}</span
               >
-            </v-chip>
+            </div>
           </template>
           <template v-slot:item.stoploss="{ item }">
-            <span v-if="!isNaN(item.stoploss)">
-              {{ item.stoploss }} {{ item.symbol.quoteAsset }}
+            <span v-if="item.stoploss">
+              {{ item.stoploss | roundTicks(item.symbol) }}
+              {{ item.symbol.quoteAsset }}
             </span>
           </template>
           <template v-slot:item.entry="{ item }">
-            <span v-if="!isNaN(item.entryHigh)">
-              {{ item.entryLow }} &mdash; {{ item.entryHigh }}
+            <span v-if="item.entryHigh">
+              {{ item.entryLow | roundTicks(item.symbol) }} &mdash;
+              {{ item.entryHigh | roundTicks(item.symbol) }}
               {{ item.symbol.quoteAsset }}
             </span>
             <span v-else>
-              {{ item.entryLow }} {{ item.symbol.quoteAsset }}
+              {{ item.entryLow | roundTicks(item.symbol) }}
+              {{ item.symbol.quoteAsset }}
             </span>
           </template>
           <template v-slot:item.symbol="{ item }">
@@ -96,19 +108,46 @@ import {
   roundStep,
   roundTicks
 } from "../exchange-helpers";
+import TradeDetails from "./TradeDetails";
 
 export default {
   name: "TradeOverview",
+  components: { TradeDetails },
   data() {
     return {
       headers: [
         { value: "id", text: "ID" },
-        { value: "symbol", text: "Symbol", sortable: false },
-        { value: "quantity", text: "Quantity", sortable: false },
-        { value: "stoploss", text: "StopLoss", sortable: false },
-        { value: "entry", text: "Entry (Range)", sortable: false },
-        { value: "buy_orders", text: "Buy Orders Filled", sortable: false },
-        { value: "takeprofits", text: "Take Profit", sortable: false },
+        { value: "symbol", text: "Symbol", sortable: false, align: "right" },
+        {
+          value: "quantity",
+          text: "Quantity",
+          sortable: false,
+          align: "right"
+        },
+        {
+          value: "stoploss",
+          text: "StopLoss",
+          sortable: false,
+          align: "right"
+        },
+        {
+          value: "entry",
+          text: "Entry (Range)",
+          sortable: false,
+          align: "right"
+        },
+        {
+          value: "buy_orders",
+          text: "Buy Orders Filled",
+          sortable: false,
+          align: "right"
+        },
+        {
+          value: "takeprofits",
+          text: "Take Profit",
+          sortable: false,
+          align: "right"
+        },
         { value: "actions", text: null, sortable: false }
       ],
       values: []
@@ -132,41 +171,22 @@ export default {
         const symbol = this.symbols.find(i => i.symbol === item.symbol);
 
         return {
-          id: item.id,
+          ...item,
           symbol,
-          quantity: roundStep(parseFloat(item.quantity), getStepSize(symbol)),
-          stoploss: roundTicks(parseFloat(item.stoploss), getTickSize(symbol)),
-          entryLow: roundTicks(parseFloat(item.entryLow), getTickSize(symbol)),
-          entryHigh: roundTicks(
-            parseFloat(item.entryHigh),
-            getTickSize(symbol)
-          ),
-          takeProfits: item.takeProfits.map(tp => {
-            return {
-              percentage: tp.percentage,
-              price: roundTicks(parseFloat(tp.price), getTickSize(symbol))
-            };
-          }),
-          buy_orders_filled: roundStep(
-            item.orders.reduce((total, i) => {
-              if (i.side !== "BUY") {
-                return total;
-              }
+          buy_orders_filled: item.orders.reduce((total, i) => {
+            if (i.side !== "BUY") {
+              return total;
+            }
 
-              return total + parseFloat(i.filledQuantity);
-            }, 0.0),
-            getStepSize(symbol)
-          ),
-          buy_orders_quantity: roundStep(
-            item.orders.reduce((total, i) => {
-              if (i.side !== "BUY") {
-                return total;
-              }
+            return total + parseFloat(i.filledQuantity);
+          }, 0.0),
+          buy_orders_quantity: item.orders.reduce((total, i) => {
+            if (i.side !== "BUY") {
+              return total;
+            }
 
-              return total + parseFloat(i.quantity);
-            }, 0.0),
-            getStepSize(symbol)
-          )
+            return total + parseFloat(i.quantity);
+          }, 0.0)
         };
       });
     }
