@@ -466,7 +466,7 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
             }
 
             return $value;
-        }, array_diff_key(get_object_vars($this), array_flip(['trade', 'takeProfit'])));
+        }, array_diff_key(get_object_vars($this), array_flip(['trade', 'takeProfit', 'orderList'])));
 
         $attributes['type'] = 'unknown';
         if (!empty($this->stopPrice)) {
