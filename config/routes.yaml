@@ -30,3 +30,8 @@ api_get_account_value:
   path: /api/v1/account/value
   methods: [GET]
   controller: app.controller.account_controller::getAccountValue
+
+api_get_logs:
+  path: /api/v1/logs
+  methods: [POST]
+  controller: app.controller.log_controller::getLogs

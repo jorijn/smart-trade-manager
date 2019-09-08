@@ -55,7 +55,7 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
     /** @var ExchangeOrder[] */
     protected $orders;
 
-    public function __construct(array $data)
+    public function __construct(array $data = [])
     {
         $this->orders = new ArrayCollection();
 

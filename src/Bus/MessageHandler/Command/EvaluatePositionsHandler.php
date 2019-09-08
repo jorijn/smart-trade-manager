@@ -74,7 +74,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
     {
         $item = $this->pool->getItem(str_replace('\\', '_', get_class($command)));
         if (!$item->isHit() || $item->get() !== $command->getKey()) {
-            $this->logger->debug('evaluating positions: probably old command, newer will follow');
+            $this->logger->debug('Evaluating positions: probably old command, newer will follow');
 
             return;
         }
@@ -84,21 +84,21 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
 
         // iterate over trades; for n in y etc
         foreach ($trades as $trade) {
-            $this->logger->debug('evaluating positions: evaluating trade', ['trade' => $trade]);
+            $this->logger->debug('Evaluating positions: evaluating trade', ['trade_id' => $trade->getId()]);
             $symbol = $this->symbolRepository->find($trade->getSymbol());
             $stepScale = $this->formatter->getStepScale($symbol);
 
             // calculate quantity already in our possession
             $buyQuantityFilled = $this->getBuyQuantityFilled($trade, $symbol, $stepScale);
             $this->logger->debug(
-                'evaluating positions: buy quantity fetched',
+                'Evaluating positions: buy quantity fetched, filled: {buy_quantity_filled}',
                 ['buy_quantity_filled' => $buyQuantityFilled, 'trade_id' => $trade->getId()]
             );
 
             // only continue processing when we have something in our possession
             if (bccomp($buyQuantityFilled, '0', $stepScale) === 0) {
                 $this->logger->debug(
-                    'evaluating positions: stop processing, nothing in procession',
+                    'Evaluating positions: stop processing, nothing in posession, filled: {buy_quantity_filled}',
                     ['buy_quantity_filled' => $buyQuantityFilled, 'trade_id' => $trade->getId()]
                 );
                 continue;
@@ -107,14 +107,14 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
             // determine type of type
             if (count($trade->getTakeProfits()) > 0) {
                 $this->logger->debug(
-                    'evaluating positions: entering take profit mode',
+                    'Evaluating positions: entering take profit mode',
                     ['trade_id' => $trade->getId()]
                 );
                 $exchangeOrders = $this->orderRepository->findTakeProfitOrders($trade);
 
                 // these calculations are only needed when there are / were sell orders
                 if (count($exchangeOrders) > 0) {
-                    $this->logger->debug('evaluating positions: found exchange selling orders', [
+                    $this->logger->debug('Evaluating positions: found exchange selling orders', [
                         'ids' => array_map(function (ExchangeOrder $order) {
                             return $order->getOrderId();
                         }, $exchangeOrders),
@@ -141,7 +141,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                     );
 
                     $this->logger->debug(
-                        'evaluating positions: calculated what\'s left to sell',
+                        'Evaluating positions: calculated what\'s left to sell: {left_to_sell_in_order}',
                         ['left_to_sell_in_order' => $leftToSellInOrder, 'trade_id' => $trade->getId()]
                     );
 
@@ -158,7 +158,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                     );
 
                     $this->logger->debug(
-                        'evaluating positions: calculated what\'s left to sell in pocession',
+                        'Evaluating positions: calculated what\'s left to sell in pocession: {left_to_sell_in_pocession}',
                         ['left_to_sell_in_pocession' => $leftToSellInPossession, 'trade_id' => $trade->getId()]
                     );
 
@@ -173,14 +173,14 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                     );
 
                     $this->logger->debug(
-                        'evaluating positions: calculated what\'s already sold for trade',
+                        'Evaluating positions: calculated what\'s already sold for trade: {already_sold_for_trade}',
                         ['already_sold_for_trade' => $alreadySoldForTrade, 'trade_id' => $trade->getId()]
                     );
 
                     // did we already took some profit or theoretically hit stop-loss? -> cancel all outstanding buy orders
                     if (bccomp('0', $alreadySoldForTrade, $stepScale) !== 0) {
                         $this->logger->debug(
-                            'evaluating positions: cancelling orders, some target (tp or sl) got hit',
+                            'Evaluating positions: cancelling orders, some target (tp or sl) got hit',
                             ['trade_id' => $trade->getId()]
                         );
 
@@ -205,7 +205,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
 
                         if ($percentage === null || bccomp($percentage, '0.0001', $stepScale) === 1) {
                             $this->logger->debug(
-                                'evaluating positions: acquired more than currently is being sold',
+                                'Evaluating positions: acquired more than currently is being sold',
                                 $logContext
                             );
 
@@ -213,7 +213,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
                             $this->createSellOrders($trade);
                         } else {
                             $this->logger->debug(
-                                'evaluating positions: acquired more but difference is within 0.01% margin',
+                                'Evaluating positions: acquired more but difference is within 0.01% margin',
                                 $logContext
                             );
                         }
@@ -234,7 +234,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
 
                 // did the stop loss order got hit somehow?
                 if (bccomp($lostAmount, '0', $stepScale) === 1) {
-                    $this->logger->info('stop loss hit, closing trade', ['trade_id' => $trade->getId()]);
+                    $this->logger->info('Stop loss hit, closing trade', ['trade_id' => $trade->getId()]);
                     $trade->setActive(false);
                     $this->manager->persist($trade);
                     $this->manager->flush();
@@ -292,7 +292,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
     protected function cancelOrders(ExchangeOrder ...$orders): void
     {
         $this->logger->debug(
-            'evaluating positions: about to cancel orders',
+            'Evaluating positions: about to cancel orders',
             [
                 'order_ids' => array_map(static function (ExchangeOrder $order) {
                     return $order->getOrderId();
@@ -306,7 +306,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
 
         if (count($orders) > 0) {
             $this->logger->debug(
-                'evaluating positions: cancelling orders',
+                'Evaluating positions: cancelling orders',
                 [
                     'order_ids' => array_map(static function (ExchangeOrder $order) {
                         return $order->getOrderId();
@@ -323,7 +323,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
      */
     protected function createSellOrders(Trade $trade): void
     {
-        $this->logger->debug('evaluating positions: creating new sell orders');
+        $this->logger->debug('Evaluating positions: creating new sell orders');
 
         $this->commandBus->dispatch(
             new CreateExchangeOrdersCommand(

@@ -99,15 +99,7 @@ class CreateExchangeOrdersHandlerTest extends TestCase
             ])->willThrowException(new BinanceApiException($message, $code));
 
         $this->logger->expects(self::once())->method('error')->with(
-            'failed to create order',
-            self::callback(static function (array $context) use (
-                $order
-            ) {
-                self::assertArrayHasKey('order', $context);
-                self::assertSame($context['order'], $order);
-
-                return true;
-            })
+            'Failed to create order: {reason}'
         );
 
         $order->expects(self::never())->method('update');

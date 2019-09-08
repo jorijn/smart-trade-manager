@@ -56,7 +56,7 @@ abstract class AbstractOrderGenerator implements OrderGeneratorInterface, Logger
         // easy container method for getting symbol
         $symbol = $this->manager->find(Symbol::class, $trade->getSymbol());
         if (!$symbol instanceof Symbol) {
-            $this->logger->error('requested symbol was not found', ['symbol' => $trade->getSymbol()]);
+            $this->logger->error('Requested symbol was not found', ['symbol' => $trade->getSymbol()]);
 
             throw new SymbolNotFoundException('requested symbol was not found');
         }
@@ -84,7 +84,7 @@ abstract class AbstractOrderGenerator implements OrderGeneratorInterface, Logger
         $filter = $symbol->getFilter($filterType);
         if (!$filter instanceof SymbolFilter) {
             $warning = sprintf(
-                'filter %s not found on symbol %s',
+                'Filter %s not found on symbol %s',
                 $filterType,
                 $symbol->getSymbol()
             );
@@ -97,7 +97,7 @@ abstract class AbstractOrderGenerator implements OrderGeneratorInterface, Logger
         $parameter = $filter->getParameter($parameter);
         if ($parameter === null) {
             $warning = sprintf(
-                'parameter %s not found on filter %s on symbol %s',
+                'Parameter %s not found on filter %s on symbol %s',
                 $parameter,
                 $filterType,
                 $symbol->getSymbol()

@@ -85,7 +85,7 @@ class EvaluatePositionsHandlerTest extends TestCase
             $this->commandBus
         );
 
-        $this->logger->expects(self::exactly(2))->method('debug')->with('evaluating positions: probably old command, newer will follow');
+        $this->logger->expects(self::exactly(2))->method('debug')->with('Evaluating positions: probably old command, newer will follow');
         $this->tradeRepository->expects(self::never())->method('getPendingTrades');
 
         $this->handler->__invoke($this->command);
@@ -542,7 +542,7 @@ class EvaluatePositionsHandlerTest extends TestCase
         $this->commandBus->expects(self::never())->method('dispatch');
         $this->queryBus->expects(self::never())->method('dispatch');
 
-        $this->logger->expects(self::once())->method('info')->with('stop loss hit, closing trade');
+        $this->logger->expects(self::once())->method('info')->with('Stop loss hit, closing trade');
         $this->trade->expects(self::once())->method('setActive')->with(false);
         $this->manager->expects(self::once())->method('persist')->with($this->trade);
         $this->manager->expects(self::once())->method('flush');

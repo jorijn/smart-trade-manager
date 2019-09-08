@@ -51,7 +51,7 @@ class OrderQueryHandler implements LoggerAwareInterface
         $tradeId = $command->getTradeId();
         $trade = $this->tradeRepository->find($tradeId);
         if (!$trade instanceof Trade) {
-            $this->logger->error('unable to generate orders, trade not found', ['trade_id' => $tradeId]);
+            $this->logger->error('Unable to generate orders, trade {trade_id} not found', ['trade_id' => $tradeId]);
 
             throw new TradeNotFoundException(sprintf('trade with ID %s not found', $tradeId));
         }
@@ -62,9 +62,8 @@ class OrderQueryHandler implements LoggerAwareInterface
             }
         }
 
-        $this->logger->critical('no suitable generator found for buy order', [
+        $this->logger->critical('No suitable generator found for buy order', [
             'trade_id' => $tradeId,
-            'trade' => $trade,
             'generators' => array_map(static function (OrderGeneratorInterface $generator) {
                 return get_class($generator);
             }, iterator_to_array($this->orderGenerators)),

@@ -3,7 +3,6 @@
 namespace App\Bus\MessageHandler\Event\Websocket;
 
 use App\Bus\Message\Event\WebsocketEvent;
-use App\Event\OrderUpdatedEvent;
 use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
@@ -42,7 +41,7 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
         $order = $this->manager->getRepository(ExchangeOrder::class)->findOneByOrderId($payload['i']);
 
         if (!$order instanceof ExchangeOrder) {
-            $this->logger->notice('received execution report for unknown order', [
+            $this->logger->notice('Received execution report for unknown order', [
                 'payload' => $payload,
             ]);
 
@@ -50,7 +49,7 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
         }
 
         if ($order->getUpdatedAt() > $payload['E']) {
-            $this->logger->info('event update time was older than or equal to most recent timestamp, ignoring', [
+            $this->logger->info('Event update time was older than or equal to most recent timestamp, ignoring', [
                 'order_id' => $order->getOrderId(),
                 'payload' => $payload,
             ]);
@@ -65,12 +64,10 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
         $this->manager->persist($order);
         $this->manager->flush();
 
-        $this->logger->info('processed execution report for order', [
+        $this->logger->info('Processed execution report for order', [
             'order_id' => $order->getOrderId(),
             'payload' => $payload,
         ]);
-
-        $this->dispatcher->dispatch(new OrderUpdatedEvent($order));
     }
 
     /**

@@ -112,7 +112,7 @@ class LimitLadderBuyOrderGenerator extends AbstractOrderGenerator
             // that would result in the trade actually taking more balance than available or was authorized.
             $recalculatedValuePerOrder = bcmul($smallestQuantityPerOrder, $rangeHigh, $priceScale);
 
-            $this->logger->debug('calculating suitable ladder set', [
+            $this->logger->debug('Calculating suitable ladder set', [
                 'value_per_order' => $valuePerOrder,
                 'smallest_quantity_per_order' => $smallestQuantityPerOrder,
                 'price_step' => $priceStep,

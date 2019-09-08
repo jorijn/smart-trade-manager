@@ -1,0 +1,22 @@
+App\Model\Log:
+  type: entity
+  repositoryClass: App\Repository\LogRepository
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: IDENTITY
+  fields:
+    message:
+      type: text
+    context:
+      type: json
+    level:
+      type: smallint
+    levelName:
+      type: string
+      length: 50
+    extra:
+      type: json
+    createdAt:
+      type: datetime

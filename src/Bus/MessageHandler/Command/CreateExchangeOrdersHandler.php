@@ -56,10 +56,10 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
      */
     public function __invoke(CreateExchangeOrdersCommand $command)
     {
-        $this->logger->info('starting dispatching of new order batch');
+        $this->logger->info('Starting dispatching of new order batch');
 
         foreach ($command->getOrders() as $order) {
-            $this->logger->info('dispatching order', ['order' => $order]);
+            $this->logger->info('Dispatching order');
 
             try {
                 $result = $this->binanceApiClient->request('POST', $order->getEndpoint(), [
@@ -70,8 +70,7 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
                 $order->update($result);
                 $this->manager->persist($order);
             } catch (BinanceApiException $exception) {
-                $this->logger->error('failed to create order', [
-                    'order' => $order,
+                $this->logger->error('Failed to create order: {reason}', [
                     'code' => $exception->getCode(),
                     'reason' => $exception->getMessage(),
                 ]);
@@ -79,6 +78,6 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
         }
 
         $this->manager->flush();
-        $this->logger->notice('end dispatching of new order batch');
+        $this->logger->notice('End dispatching of new order batch');
     }
 }

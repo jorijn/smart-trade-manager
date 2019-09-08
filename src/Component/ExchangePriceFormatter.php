@@ -62,7 +62,7 @@ class ExchangePriceFormatter implements LoggerAwareInterface
     {
         $filter = $symbol->getFilter($filterType);
         if (!$filter instanceof SymbolFilter) {
-            $this->logger->warning('filter requested for symbol but was not found', [
+            $this->logger->warning('Filter {filter} requested for symbol {symbol} but was not found', [
                 'symbol' => $symbol->getSymbol(),
                 'filter' => $filterType,
             ]);
@@ -84,7 +84,7 @@ class ExchangePriceFormatter implements LoggerAwareInterface
     {
         $value = $filter->getParameter($parameter);
         if ($value === null) {
-            $this->logger->warning('parameter requested on filter but was not found', [
+            $this->logger->warning('Parameter {parameter} requested on filter {filter} but was not found', [
                 'symbol' => $symbol->getSymbol(),
                 'parameter' => $parameter,
                 'filter' => $filter->getFilterType(),

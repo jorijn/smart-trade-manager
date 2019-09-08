@@ -101,7 +101,7 @@ class CancelExchangeOrdersHandlerTest extends TestCase
             ])->willThrowException(new BinanceApiException($message, $code));
 
         $this->logger->expects(self::once())->method('error')->with(
-            'failed to cancel order',
+            'Failed to cancel order: {reason}',
             self::callback(static function (array $context) use (
                 $orderId
             ) {

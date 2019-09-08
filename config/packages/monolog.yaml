@@ -1,0 +1,25 @@
+monolog:
+  channels:
+    - db
+    - main
+  handlers:
+    db:
+      type: service
+      id: app.monolog.database_handler
+      channels: ["!event", "!doctrine", "!request"]
+    main:
+      type: rotating_file
+      path: "%kernel.logs_dir%/%kernel.environment%.log"
+      level: info
+    console:
+      type: console
+      process_psr_3_messages: false
+      channels: ["!event", "!doctrine"]
+    deprecation:
+      type: stream
+      path: "%kernel.logs_dir%/%kernel.environment%.deprecations.log"
+    deprecation_filter:
+      type: filter
+      handler: deprecation
+      max_level: info
+      channels: ["php"]

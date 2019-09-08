@@ -321,6 +321,11 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setStopPrice(?string $stopPrice): ExchangeOrder
     {
+        if ($stopPrice === '0.00000000') {
+            // 0.00000000 means empty
+            return $this;
+        }
+
         $this->stopPrice = $stopPrice;
 
         return $this;

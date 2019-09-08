@@ -42,11 +42,11 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
 
     public function __invoke(CancelExchangeOrdersCommand $command)
     {
-        $this->logger->info('starting dispatching of order cancellation batch');
+        $this->logger->info('Starting dispatching of order cancellation batch');
 
         foreach ($command->getOrders() as $order) {
             $logContext = [$order->getAttributeIdentifier() => $order->getAttributeIdentifierValue()];
-            $this->logger->info('dispatching order cancellation', $logContext);
+            $this->logger->info('Dispatching order cancellation', $logContext);
 
             try {
                 $result = $this->binanceApiClient->request('DELETE', $order->getEndpoint(), [
@@ -61,7 +61,7 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
                 $this->manager->persist($order);
             } catch (BinanceApiException $exception) {
                 $this->logger->error(
-                    'failed to cancel order',
+                    'Failed to cancel order: {reason}',
                     $logContext + [
                         'code' => $exception->getCode(),
                         'reason' => $exception->getMessage(),
@@ -71,6 +71,6 @@ class CancelExchangeOrdersHandler implements LoggerAwareInterface
         }
 
         $this->manager->flush();
-        $this->logger->notice('end dispatching of new order batch');
+        $this->logger->notice('End dispatching of new order batch');
     }
 }

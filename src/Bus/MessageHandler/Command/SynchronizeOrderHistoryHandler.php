@@ -3,7 +3,6 @@
 namespace App\Bus\MessageHandler\Command;
 
 use App\Bus\Message\Command\SynchronizeOrderHistoryCommand;
-use App\Event\OrderUpdatedEvent;
 use App\Model\ExchangeOcoOrder;
 use App\Model\ExchangeOrder;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -84,7 +83,7 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
             foreach ($ordersToBeUpdated as $order) {
                 $data = $exchangeData[$order->getOrderId()];
                 if ($data['updateTime'] <= $order->getUpdatedAt()) {
-                    $this->logger->debug('received order info but local copy is more recent, ignoring', [
+                    $this->logger->debug('Received order info but local copy is more recent, ignoring', [
                         'id' => $order->getOrderId(),
                         'remote_ts' => $data['updateTime'],
                         'local_ts' => $order->getUpdatedAt(),
@@ -95,11 +94,7 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
                 $order->update($data);
 
                 $this->manager->persist($order);
-                $this->logger->info('updated order info from exchange', $data);
-
-                if ($command->shouldTriggerEvents()) {
-                    $this->dispatcher->dispatch(new OrderUpdatedEvent($order));
-                }
+                $this->logger->info('Updated order info from exchange', $data);
             }
 
             $this->manager->flush();
@@ -109,18 +104,18 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
     /**
      * @param array $pair
      *
-     * @throws TransportExceptionInterface
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      *
      * @return array of orders
      */
     protected function getExchangeStatus(array $pair): array
     {
         ['symbol' => $symbol, 'oldest_order' => $oldestId] = $pair;
-        $this->logger->debug(sprintf('symbol %s has pending orders, fetching status from exchange', $symbol), [
+        $this->logger->debug('Symbol {symbol} has pending orders, fetching status from exchange', [
             'symbol' => $symbol,
             'oldest_order' => $oldestId,
         ]);
@@ -161,7 +156,7 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
                 ->setListOrderStatus($response['listOrderStatus'])
                 ->setUpdatedAt($response['transactionTime']);
 
-            $this->logger->info('updated oco order info from exchange', $response);
+            $this->logger->info('Updated oco order info from exchange', $response);
 
             $this->manager->persist($order);
             $this->manager->flush();

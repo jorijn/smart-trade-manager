@@ -61,11 +61,11 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
 
     public function handleKillSignal(): void
     {
-        $this->logger->info('received kill signal');
+        $this->logger->info('Received kill signal');
 
         if ($this->connection) {
             // if we get here, close the websocket connection
-            $this->logger->info('closing websocket', ['listenKey' => $this->listenKey]);
+            $this->logger->info('Closing websocket', ['listenKey' => $this->listenKey]);
 
             $this->connection->close();
             $this->httpClient->request(
@@ -95,16 +95,15 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
             ['extra' => ['security_type' => 'USER_STREAM']]
         );
 
-        // TODO make error handling more robust than "just bubble it through"
         $this->listenKey = $this->accessor->getValue($response->toArray(false), '[listenKey]');
 
         // start the loop
-        $this->logger->info('starting websocket', ['listenKey' => $this->listenKey]);
+        $this->logger->info('Starting websocket', ['listenKey' => $this->listenKey]);
 
         try {
             $this->buildAndProcessWebsocket();
         } catch (Websocket\ClosedException $exception) {
-            $this->logger->info('closed websocket', [
+            $this->logger->info('Closed websocket', [
                 'reason' => $exception->getReason(),
             ]);
         }
@@ -118,7 +117,7 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
         Loop::run(function () use (&$lastPing) {
             /* @var Websocket\Connection $connection */
             $this->connection = yield Websocket\connect('wss://stream.binance.com:9443/ws/'.$this->listenKey);
-            $this->logger->info('websocket connected', ['listenKey' => $this->listenKey]);
+            $this->logger->info('Websocket connected', ['listenKey' => $this->listenKey]);
 
             /** @var Websocket\Message $message */
             while ($message = yield $this->connection->receive()) {
@@ -132,7 +131,7 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
                     $lastPing = time();
 
                     // this signals the API to keep the websocket open
-                    $this->logger->info('sending ping for websocket', ['listenKey' => $this->listenKey]);
+                    $this->logger->info('Sending ping for websocket', ['listenKey' => $this->listenKey]);
                     $this->httpClient->request(
                         'PUT',
                         'v1/userDataStream',
@@ -151,7 +150,7 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
         $data = json_decode($payload, true);
         $event = new WebsocketEvent($data['e'], $data);
 
-        $this->logger->info('dispatching websocket event', ['event' => $event]);
+        $this->logger->info('Dispatching websocket event', ['event' => $event]);
 
         $this->eventBus->dispatch($event);
     }
