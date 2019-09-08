@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" absolute temporary app>
+    <v-navigation-drawer v-model="drawer" app>
       <v-list>
         <v-list-item to="/trading">
           <v-list-item-action>
@@ -52,7 +52,7 @@
 export default {
   name: "app",
   data: () => ({
-    drawer: false
+    drawer: null
   })
 };
 </script>
