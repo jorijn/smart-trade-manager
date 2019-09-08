@@ -9,7 +9,6 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -25,24 +24,19 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
     protected $manager;
     /** @var HttpClientInterface */
     protected $binanceApi;
-    /** @var EventDispatcherInterface */
-    protected $dispatcher;
 
     /**
-     * @param LoggerInterface          $logger
-     * @param ObjectManager            $manager
-     * @param HttpClientInterface      $binanceApi
-     * @param EventDispatcherInterface $dispatcher
+     * @param LoggerInterface     $logger
+     * @param ObjectManager       $manager
+     * @param HttpClientInterface $binanceApi
      */
     public function __construct(
         LoggerInterface $logger,
         ObjectManager $manager,
-        HttpClientInterface $binanceApi,
-        EventDispatcherInterface $dispatcher
+        HttpClientInterface $binanceApi
     ) {
         $this->manager = $manager;
         $this->binanceApi = $binanceApi;
-        $this->dispatcher = $dispatcher;
 
         $this->setLogger($logger);
     }
@@ -151,15 +145,12 @@ class SynchronizeOrderHistoryHandler implements LoggerAwareInterface
                 ],
             ])->toArray(false);
 
-            $order
-                ->setListStatusType($response['listStatusType'])
-                ->setListOrderStatus($response['listOrderStatus'])
-                ->setUpdatedAt($response['transactionTime']);
+            $order->update($response);
 
             $this->logger->info('Updated oco order info from exchange', $response);
-
             $this->manager->persist($order);
-            $this->manager->flush();
         }
+
+        $this->manager->flush();
     }
 }

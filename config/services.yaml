@@ -92,7 +92,6 @@ services:
       - "@logger"
       - "@doctrine.orm.default_entity_manager"
       - "@binance_api.client"
-      - "@event_dispatcher"
     tags:
       - {
           name: messenger.message_handler,
