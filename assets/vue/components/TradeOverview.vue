@@ -33,32 +33,39 @@
             {{ item.symbol.quoteAsset }}
           </template>
           <template v-slot:item.buy_orders="{ item }">
-            {{ item.buy_orders_filled }} / {{ item.buy_orders_quantity }}
-            {{ item.symbol.baseAsset }} ({{
-              (
-                (item.buy_orders_filled / item.buy_orders_quantity) *
-                100
-              ).toFixed(0)
-            }}%)
+            <span v-if="item.buy_orders_quantity > 0">
+              {{ item.buy_orders_filled }} / {{ item.buy_orders_quantity }}
+              {{ item.symbol.baseAsset }} ({{
+                (
+                  (item.buy_orders_filled / item.buy_orders_quantity) *
+                  100
+                ).toFixed(0)
+              }}%)
+            </span>
+            <span v-else>-</span>
           </template>
           <template v-slot:item.takeprofits="{ item }">
-            <div
-              class=""
-              :key="price"
-              v-for="{ percentage, price } in item.takeProfits"
-            >
-              <span
-                >Sell <strong>{{ percentage }}%</strong> at
-                <strong>{{ price | roundTicks(item.symbol) }}</strong>
-                {{ item.symbol.quoteAsset }}</span
+            <div v-if="item.takeProfits.length > 0">
+              <div
+                class=""
+                :key="price"
+                v-for="{ percentage, price } in item.takeProfits"
               >
+                <span
+                  >Sell <strong>{{ percentage }}%</strong> at
+                  <strong>{{ price | roundTicks(item.symbol) }}</strong>
+                  {{ item.symbol.quoteAsset }}</span
+                >
+              </div>
             </div>
+            <span v-else>-</span>
           </template>
           <template v-slot:item.stoploss="{ item }">
             <span v-if="item.stoploss">
               {{ item.stoploss | roundTicks(item.symbol) }}
               {{ item.symbol.quoteAsset }}
             </span>
+            <span v-else>-</span>
           </template>
           <template v-slot:item.entry="{ item }">
             <span v-if="item.entryHigh">
