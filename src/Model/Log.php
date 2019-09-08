@@ -2,8 +2,6 @@
 
 namespace App\Model;
 
-use Doctrine\Common\Collections\Collection;
-
 class Log implements \JsonSerializable
 {
     /** @var int */

@@ -141,18 +141,30 @@ class Trade implements \JsonSerializable
     }
 
     /**
-     * @param TakeProfit[] $takeProfits
+     * @param TakeProfit $takeProfit
      *
-     * @return Trade
+     * @return $this
      */
-    public function setTakeProfits(array $takeProfits): Trade
+    public function addTakeProfit(TakeProfit $takeProfit): self
     {
-        $trade = $this;
-        $this->takeProfits = array_map(static function ($takeProfit) use ($trade) {
-            $takeProfit->setTrade($trade);
+        if (!$this->takeProfits->contains($takeProfit)) {
+            $takeProfit->setTrade($this);
+            $this->takeProfits->add($takeProfit);
+        }
 
-            return $takeProfit;
-        }, $takeProfits);
+        return $this;
+    }
+
+    /**
+     * @param TakeProfit $takeProfit
+     *
+     * @return $this
+     */
+    public function removeTakeProfit(TakeProfit $takeProfit): self
+    {
+        if ($this->takeProfits->contains($takeProfit)) {
+            $this->takeProfits->removeElement($takeProfit);
+        }
 
         return $this;
     }
