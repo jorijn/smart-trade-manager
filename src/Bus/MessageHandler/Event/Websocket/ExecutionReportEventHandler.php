@@ -64,7 +64,7 @@ class ExecutionReportEventHandler implements WebsocketEventHandlerInterface, Log
         $this->manager->persist($order);
         $this->manager->flush();
 
-        $this->logger->info('Processed execution report for order', [
+        $this->logger->info('Processed execution report for order {order_id}', [
             'order_id' => $order->getOrderId(),
             'payload' => $payload,
         ]);

@@ -150,7 +150,7 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
         $data = json_decode($payload, true);
         $event = new WebsocketEvent($data['e'], $data);
 
-        $this->logger->info('Dispatching websocket event', ['event' => $event]);
+        $this->logger->info('Dispatching websocket event', ['event' => $data['e'], 'payload' => $data]);
 
         $this->eventBus->dispatch($event);
     }
