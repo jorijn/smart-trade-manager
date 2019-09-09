@@ -52,10 +52,15 @@ class StopLimitLossOrderGenerator extends AbstractOrderGenerator
         $order
             ->setSide('SELL')
             ->setSymbol($validatedSymbol->getSymbol())
+            ->setType(ExchangeOrder::STOP_LOSS_LIMIT)
             ->setQuantity($this->formatter->roundStep($validatedSymbol, $alreadyAcquired))
-            ->setStopPrice($this->formatter->roundTicks(
+            ->setPrice($this->formatter->roundTicks(
                 $validatedSymbol,
                 bcdiv($trade->getStoploss(), (string) $riskPercentage, $this->formatter->getPriceScale($validatedSymbol))
+            ))
+            ->setStopPrice($this->formatter->roundTicks(
+                $validatedSymbol,
+                $trade->getStoploss()
             ))
             ->setTrade($trade);
 

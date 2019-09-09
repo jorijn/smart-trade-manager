@@ -51,6 +51,7 @@ class TakeProfitSellOrderGenerator extends AbstractOrderGenerator
             $order
                 ->setSymbol($symbol->getSymbol())
                 ->setSide('SELL')
+                ->setType(ExchangeOrder::LIMIT)
                 ->setQuantity($this->formatter->roundStep($symbol, $quantity))
                 ->setPrice($this->formatter->roundTicks($symbol, $price))
                 ->setTrade($trade)
