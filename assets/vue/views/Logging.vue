@@ -97,7 +97,7 @@ export default {
         });
     },
     getColor(level) {
-      if (level > 400) {
+      if (level >= 400) {
         return "red";
       }
 
