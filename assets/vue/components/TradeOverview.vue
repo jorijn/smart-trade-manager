@@ -34,7 +34,8 @@
           </template>
           <template v-slot:item.buy_orders="{ item }">
             <span v-if="item.buy_orders_quantity > 0">
-              {{ item.buy_orders_filled }} / {{ item.buy_orders_quantity }}
+              {{ item.buy_orders_filled | roundStep(item.symbol) }} /
+              {{ item.buy_orders_quantity | roundStep(item.symbol) }}
               {{ item.symbol.baseAsset }} ({{
                 (
                   (item.buy_orders_filled / item.buy_orders_quantity) *
