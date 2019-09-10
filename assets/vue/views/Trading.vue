@@ -44,7 +44,14 @@ export default {
       try {
         const result = await axios.get("/api/v1/trade");
         this.overviewLoading = false;
-        this.trades = result.data;
+        this.trades = result.data
+          .sort((a, b) => Math.sign(parseFloat(b.id) - parseFloat(a.id)))
+          .map(order => {
+            order.orders = order.orders.sort((a, b) =>
+              Math.sign(parseFloat(b.orderId) - parseFloat(a.orderId))
+            );
+            return order;
+          });
       } catch (error) {
         this.overviewLoading = false;
       }

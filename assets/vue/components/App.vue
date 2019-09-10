@@ -18,14 +18,14 @@
             <v-list-item-title>Logging</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item to="/about">
-          <v-list-item-action>
-            <v-icon>fas fa-address-card</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>About</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        <!--        <v-list-item to="/about">-->
+        <!--          <v-list-item-action>-->
+        <!--            <v-icon>fas fa-address-card</v-icon>-->
+        <!--          </v-list-item-action>-->
+        <!--          <v-list-item-content>-->
+        <!--            <v-list-item-title>About</v-list-item-title>-->
+        <!--          </v-list-item-content>-->
+        <!--        </v-list-item>-->
       </v-list>
     </v-navigation-drawer>
     <v-app-bar

@@ -5,16 +5,20 @@
     :headers="headers"
     :items="orders"
     group-by="side"
+    item-key="orderId"
+    sort-by="orderId"
+    :sort-desc="true"
+    multi-sort
   >
     <template v-slot:item.updatedAt="{ item }">
       {{ item.updatedAt | fromNow }}
     </template>
     <template v-slot:item.filledQuantity="{ item }">
-      {{ item.filledQuantity | roundStep(symbol) }}
+      {{ item.filledQuantity | roundStep(symbol) }} /
+      {{ item.quantity | roundStep(symbol) }}
       {{ symbol.baseAsset }} ({{
-        item.filledQuoteQuantity | roundStep(symbol)
-      }}
-      {{ symbol.quoteAsset }})
+        ((item.filledQuantity / item.quantity) * 100).toFixed(0)
+      }}%)
     </template>
     <template v-slot:item.price="{ item }">
       {{ item.price | roundTicks(symbol) }} {{ symbol.quoteAsset }}
