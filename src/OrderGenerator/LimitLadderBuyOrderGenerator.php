@@ -102,7 +102,7 @@ class LimitLadderBuyOrderGenerator extends AbstractOrderGenerator
 
             $valuePerOrder = bcdiv($quantity, $quantitySize, $priceScale);
             $smallestQuantityPerOrder = bcdiv($valuePerOrder, $rangeHigh, $stepScale);
-            $priceStep = (float) ($priceDifference / $ladderSize);
+            $priceStep = number_format($priceDifference / $ladderSize, 10, '.', '');
 
             // we need to convert it back to our local asset price for rounding differences due to scale limitations,
             // example 10 USD, divided by 8600 would be 0.001162 BTC rounded, but 0.001162 multiplied by 8600 USD would
@@ -118,6 +118,7 @@ class LimitLadderBuyOrderGenerator extends AbstractOrderGenerator
                 'price_step' => $priceStep,
                 'recalculated_value_per_order' => $recalculatedValuePerOrder,
                 'ladder_size' => $ladderSize,
+                'price_difference' => $priceDifference,
                 'quantity_size' => $quantitySize,
             ]);
         } while (
