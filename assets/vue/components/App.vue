@@ -38,6 +38,11 @@
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title>Smart Trade Manager</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn icon @click="toggleDarkMode">
+        <v-icon v-if="!applicationDarkMode">far fa-moon</v-icon>
+        <v-icon v-else>far fa-sun</v-icon>
+      </v-btn>
     </v-app-bar>
 
     <v-content>
@@ -52,8 +57,23 @@
 export default {
   name: "app",
   data: () => ({
-    drawer: null
-  })
+    drawer: null,
+    applicationDarkMode: false
+  }),
+  beforeMount() {
+    this.applicationDarkMode = this.$vuetify.theme.dark;
+  },
+  methods: {
+    toggleDarkMode() {
+      this.applicationDarkMode = !this.applicationDarkMode;
+    }
+  },
+  watch: {
+    applicationDarkMode() {
+      this.$vuetify.theme.dark = this.applicationDarkMode;
+      localStorage.setItem("dark-mode", this.applicationDarkMode);
+    }
+  }
 };
 </script>
 
