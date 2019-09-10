@@ -70,8 +70,12 @@ export default {
   },
   watch: {
     applicationDarkMode() {
-      this.$vuetify.theme.dark = this.applicationDarkMode;
-      localStorage.setItem("dark-mode", this.applicationDarkMode);
+      try {
+        localStorage.setItem("dark-mode", this.applicationDarkMode);
+        this.$vuetify.theme.dark = this.applicationDarkMode;
+      } catch (err) {
+        this.applicationDarkMode = false;
+      }
     }
   }
 };
