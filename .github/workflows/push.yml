@@ -25,7 +25,7 @@ jobs:
       - name: build.backend.test
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/backend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
+          args: build -f .docker/backend/Dockerfile.test -t ci-backend-${{ github.sha }}:latest .
       - name: build.backend.test
         uses: actions/docker/cli@master
         with:
