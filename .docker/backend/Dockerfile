@@ -30,6 +30,8 @@ RUN npm run build
 
 FROM php:7.2-fpm-alpine
 
+WORKDIR /app/
+
 RUN set -xe \
     && apk add --update \
         icu \

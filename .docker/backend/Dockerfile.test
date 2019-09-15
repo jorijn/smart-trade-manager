@@ -19,6 +19,8 @@ RUN composer dump-autoload --no-scripts --no-dev --optimize
 
 FROM php:7.2-fpm-alpine
 
+WORKDIR /app/
+
 RUN set -xe \
     && apk add --update \
         icu \
@@ -50,8 +52,8 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY . /app/
 COPY --from=vendor /app/vendor/ /app/vendor/
-COPY --from=assets /app/public/build/manifest.json /app/public/build/manifest.json
-COPY --from=assets /app/public/build/entrypoints.json /app/public/build/entrypoints.json
 
 RUN mkdir -p /app/var/cache /app/var/log \
     && chown -R www-data.www-data /app/
+
+CMD ["bin/phpunit"]

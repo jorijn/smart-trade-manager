@@ -6,3 +6,5 @@ COPY ./package.json ./webpack.config.js .gitignore ./package-lock.json .eslintrc
 COPY ./assets /app/assets/
 
 RUN npm install
+
+CMD ["npm", "run", "lint"]
