@@ -1,1 +1,12 @@
-
+on:
+  push:
+    branches:
+    - master
+    
+jobs:
+  lint-test-build:
+    name: Lint, test & build the Smart Trade Manager application
+    runs-on: ubuntu-latest
+    
+   steps:
+   - uses: ./.github/workflows/build-test-deploy.workflow
