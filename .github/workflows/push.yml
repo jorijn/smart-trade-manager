@@ -17,11 +17,11 @@ jobs:
       - name: Run ESLint
         uses: actions/docker/cli@master
         with:
-          args: run ci-frontend-${{ github.sha }}:latest cd /app/ && npm run lint
+          args: run ci-frontend-${{ github.sha }}:latest
       - name: Run PHPUnit
         uses: actions/docker/cli@master
         with:
-          args: run ci-backend-${{ github.sha }}:latest /app/bin/phpunit
+          args: run ci-backend-${{ github.sha }}:latest
       - name: Only continue when event is creating a new tag
         uses: actions/bin/filter@master
         with:
@@ -33,6 +33,4 @@ jobs:
       - name: Build the production backend
         uses: actions/docker/cli@master
         with:
-          args:
-            build -f .docker/build/backend/Dockerfile -t smarttrademanager/backend:latest
-            .
+          args: build -f .docker/build/backend/Dockerfile -t smarttrademanager/backend:latest .
