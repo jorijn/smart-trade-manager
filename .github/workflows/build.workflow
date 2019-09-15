@@ -1,4 +1,4 @@
-workflow "Lint, test, build & deploy the code" {
+workflow "Lint" {
   resolves = [
     "Run ESLint",
     "Run PHPUnit",
