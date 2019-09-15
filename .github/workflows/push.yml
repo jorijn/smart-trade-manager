@@ -1,12 +1,38 @@
-on:
-  push:
-    branches:
-    - master
-    
+on: push
+name: Lint, test, build & deploy the code
 jobs:
-  lint-test-build:
-    name: Lint, test & build the Smart Trade Manager application
+  lint_build_test_deploy:
+    name: Build the testing frontend
     runs-on: ubuntu-latest
-    
-   steps:
-   - uses: ./.github/workflows/build-test-deploy.workflow
+    steps:
+      - uses: actions/checkout@master
+      - name: Build the testing frontend
+        uses: actions/docker/cli@master
+        with:
+          args: build -f .docker/build/frontend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
+      - name: Build the testing backend
+        uses: actions/docker/cli@master
+        with:
+          args: build -f .docker/build/backend/Dockerfile.test -t ci-backend-${{ github.sha }}:latest .
+      - name: Run ESLint
+        uses: actions/docker/cli@master
+        with:
+          args: run ci-frontend-${{ github.sha }}:latest cd /app/ && npm run lint
+      - name: Run PHPUnit
+        uses: actions/docker/cli@master
+        with:
+          args: run ci-backend-${{ github.sha }}:latest /app/bin/phpunit
+      - name: Only continue when event is creating a new tag
+        uses: actions/bin/filter@master
+        with:
+          args: tag
+      - name: Build the production frontend
+        uses: actions/docker/cli@master
+        with:
+          args: build -f .docker/build/frontend/Dockerfile -t smarttrademanager/frontend:latest .
+      - name: Build the production backend
+        uses: actions/docker/cli@master
+        with:
+          args:
+            build -f .docker/build/backend/Dockerfile -t smarttrademanager/backend:latest
+            .
