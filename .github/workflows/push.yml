@@ -9,11 +9,11 @@ jobs:
       - name: Build the testing frontend
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/build/frontend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
+          args: build -f .docker/frontend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
       - name: Build the testing backend
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/build/backend/Dockerfile.test -t ci-backend-${{ github.sha }}:latest .
+          args: build -f .docker/backend/Dockerfile.test -t ci-backend-${{ github.sha }}:latest .
       - name: Run ESLint
         uses: actions/docker/cli@master
         with:
@@ -29,8 +29,8 @@ jobs:
       - name: Build the production frontend
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/build/frontend/Dockerfile -t smarttrademanager/frontend:latest .
+          args: build -f .docker/frontend/Dockerfile -t smarttrademanager/frontend:latest .
       - name: Build the production backend
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/build/backend/Dockerfile -t smarttrademanager/backend:latest .
+          args: build -f .docker/backend/Dockerfile -t smarttrademanager/backend:latest .
