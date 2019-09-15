@@ -1,36 +1,74 @@
 on: push
 name: Lint, test, build & deploy the code
 jobs:
-  lint_build_test_deploy:
+  build_frontend_test:
     name: Build the testing frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Build the testing frontend
+      - name: build.frontend.test
         uses: actions/docker/cli@master
         with:
           args: build -f .docker/frontend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
-      - name: Build the testing backend
+
+  build_backend_test:
+    name: Build the testing backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: build.backend.test
+        uses: actions/docker/cli@master
+        with:
+          args: build -f .docker/backend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
+
+  test_backend:
+    name: Test the PHP code
+    runs-on: ubuntu-latest
+    needs: build_backend_test
+    steps:
+      - name: build.backend.test
         uses: actions/docker/cli@master
         with:
           args: build -f .docker/backend/Dockerfile.test -t ci-backend-${{ github.sha }}:latest .
-      - name: Run ESLint
+
+  test_frontend:
+    name: Test the JS code
+    runs-on: ubuntu-latest
+    needs: build_frontend_test
+    steps:
+      - name: build.frontend.test
         uses: actions/docker/cli@master
         with:
-          args: run ci-frontend-${{ github.sha }}:latest
-      - name: Run PHPUnit
-        uses: actions/docker/cli@master
-        with:
-          args: run ci-backend-${{ github.sha }}:latest
-      - name: Only continue when event is creating a new tag
+          args: build -f .docker/frontend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
+
+  filter_tag:
+    name: Only continue when push is of type tag
+    runs-on: ubuntu-latest
+    needs:
+      - test_frontend
+      - test_backend
+    steps:
+      - name: filter.tag
         uses: actions/bin/filter@master
         with:
           args: tag
-      - name: Build the production frontend
+
+  build_backend_production:
+    name: Build the final production image for the backend
+    runs-on: ubuntu-latest
+    needs: filter_tag
+    steps:
+      - name: build.backend.production
+        uses: actions/docker/cli@master
+        with:
+          args: build -f .docker/frontend/Dockerfile -t smarttrademanager/backend:latest .
+
+  build_frontend_production:
+    name: Build the final production image for the frontend
+    runs-on: ubuntu-latest
+    needs: filter_tag
+    steps:
+      - name: build.frontend.production
         uses: actions/docker/cli@master
         with:
           args: build -f .docker/frontend/Dockerfile -t smarttrademanager/frontend:latest .
-      - name: Build the production backend
-        uses: actions/docker/cli@master
-        with:
-          args: build -f .docker/backend/Dockerfile -t smarttrademanager/backend:latest .
