@@ -1,3 +1,5 @@
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+
 on: push
 name: Lint, test, build & deploy the code
 jobs:
@@ -26,40 +28,26 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_backend_test
     steps:
-      - uses: actions/checkout@master
       - name: build.backend.test
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/backend/Dockerfile.test -t ci-backend-${{ github.sha }}:latest .
+          args: run ci-backend-${{ github.sha }}:latest
 
   test_frontend:
     name: Test the JS code
     runs-on: ubuntu-latest
     needs: build_frontend_test
     steps:
-      - uses: actions/checkout@master
       - name: build.frontend.test
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/frontend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
-
-  filter_tag:
-    name: Only continue when push is of type tag
-    runs-on: ubuntu-latest
-    needs:
-      - test_frontend
-      - test_backend
-    steps:
-      - uses: actions/checkout@master
-      - name: filter.tag
-        uses: actions/bin/filter@master
-        with:
-          args: tag
+          args: run ci-frontend-${{ github.sha }}:latest
 
   build_backend_production:
     name: Build the final production image for the backend
     runs-on: ubuntu-latest
-    needs: filter_tag
+    if: github.event_name == 'tag'
+    needs: test_backend
     steps:
       - uses: actions/checkout@master
       - name: build.backend.production
@@ -70,7 +58,8 @@ jobs:
   build_frontend_production:
     name: Build the final production image for the frontend
     runs-on: ubuntu-latest
-    needs: filter_tag
+    if: github.event_name == 'tag'
+    needs: test_frontend
     steps:
       - uses: actions/checkout@master
       - name: build.frontend.production
