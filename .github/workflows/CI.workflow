@@ -1,7 +1,7 @@
 workflow "Lint, test, build & deploy the code" {
   resolves = [
     "Build the production backend",
-    "Build the production frontend"
+    "Build the production frontend",
   ]
   on = "push"
 }
@@ -28,21 +28,20 @@ action "Run ESLint" {
   args = "run ci-frontend-$GITHUB_SHA:latest cd /app/ && npm run lint"
 }
 
-action "git.master" {
-  uses = "actions/bin/filter@master"
+action "Only continue when event is creating a new tag" {
+  uses = "actions/bin/filter@25b7b846d5027eac3315b50a8055ea675e2abd89"
   needs = ["Run PHPUnit", "Run ESLint"]
-  args = "branch master"
+  args = "tag"
 }
 
 action "Build the production backend" {
   uses = "actions/docker/cli@master"
   args = "build -f .docker/build/backend/Dockerfile -t smarttrademanager/backend:latest ."
-  needs = ["git.master"]
+  needs = ["Only continue when event is creating a new tag"]
 }
 
 action "Build the production frontend" {
   uses = "actions/docker/cli@master"
   args = "build -f .docker/build/frontend/Dockerfile -t smarttrademanager/frontend:latest ."
-  needs = ["git.master"]
+  needs = ["Only continue when event is creating a new tag"]
 }
-
