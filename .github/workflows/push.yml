@@ -4,7 +4,7 @@ on: push
 name: Lint, test, build & deploy the code
 jobs:
   build_frontend_test:
-    name: Build the testing frontend
+    name: Build & test the frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -12,9 +12,13 @@ jobs:
         uses: actions/docker/cli@master
         with:
           args: build -f .docker/frontend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
+      - name: build.frontend.test
+        uses: actions/docker/cli@master
+        with:
+          args: run ci-frontend-${{ github.sha }}:latest
 
   build_backend_test:
-    name: Build the testing backend
+    name: Build & test the backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -22,32 +26,16 @@ jobs:
         uses: actions/docker/cli@master
         with:
           args: build -f .docker/backend/Dockerfile.test -t ci-frontend-${{ github.sha }}:latest .
-
-  test_backend:
-    name: Test the PHP code
-    runs-on: ubuntu-latest
-    needs: build_backend_test
-    steps:
       - name: build.backend.test
         uses: actions/docker/cli@master
         with:
           args: run ci-backend-${{ github.sha }}:latest
 
-  test_frontend:
-    name: Test the JS code
-    runs-on: ubuntu-latest
-    needs: build_frontend_test
-    steps:
-      - name: build.frontend.test
-        uses: actions/docker/cli@master
-        with:
-          args: run ci-frontend-${{ github.sha }}:latest
-
   build_backend_production:
     name: Build the final production image for the backend
     runs-on: ubuntu-latest
     if: github.event_name == 'tag'
-    needs: test_backend
+    needs: build_frontend_test
     steps:
       - uses: actions/checkout@master
       - name: build.backend.production
@@ -59,7 +47,7 @@ jobs:
     name: Build the final production image for the frontend
     runs-on: ubuntu-latest
     if: github.event_name == 'tag'
-    needs: test_frontend
+    needs: build_frontend_test
     steps:
       - uses: actions/checkout@master
       - name: build.frontend.production
