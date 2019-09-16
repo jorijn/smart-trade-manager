@@ -1,3 +1,3 @@
 # Project "Smart Trade Manager"
 
-FIXME...
+Still a work in progress. Do not use, yet. :-) 
