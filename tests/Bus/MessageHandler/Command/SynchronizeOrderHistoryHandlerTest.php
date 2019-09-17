@@ -36,10 +36,12 @@ class SynchronizeOrderHistoryHandlerTest extends TestCase
 
     public function testDoesNothingNoPendingSymbols()
     {
+        self::markTestIncomplete('TODO');
     }
 
     public function testPendingSymbolsButNoPendingOrders()
     {
+        self::markTestIncomplete('TODO');
     }
 
     /**
@@ -59,6 +61,8 @@ class SynchronizeOrderHistoryHandlerTest extends TestCase
         array $ordersOnExchange,
         array $updatesExpected
     ): void {
+        self::markTestIncomplete('TODO');
+
         $oldestId = mt_rand();
         $symbol = 's'.mt_rand();
 

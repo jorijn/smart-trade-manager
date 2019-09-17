@@ -98,7 +98,7 @@ class EvaluatePositionsHandler implements LoggerAwareInterface
             // only continue processing when we have something in our possession
             if (bccomp($buyQuantityFilled, '0', $stepScale) === 0) {
                 $this->logger->debug(
-                    'Evaluating positions: stop processing, nothing in posession, filled: {buy_quantity_filled}',
+                    'Evaluating positions: stop processing, nothing in possession, filled: {buy_quantity_filled}',
                     ['buy_quantity_filled' => $buyQuantityFilled, 'trade_id' => $trade->getId()]
                 );
                 continue;
