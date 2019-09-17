@@ -52,6 +52,7 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY . /app/
 COPY --from=vendor /app/vendor/ /app/vendor/
+COPY --from=vendor /usr/bin/composer /usr/bin/composer
 
 RUN mkdir -p /app/var/cache /app/var/log \
     && chown -R www-data.www-data /app/
