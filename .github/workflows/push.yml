@@ -31,6 +31,18 @@ jobs:
         with:
           args: run ci-backend-${{ github.sha }}:latest
 
+  login_docker_registry:
+    name: Login on the Github package registry
+    runs-on: ubuntu-latest
+    if: github.event_name == 'tag'
+    steps:
+      - uses: actions/docker/login@master
+        secrets:
+          - DOCKER_USERNAME
+          - DOCKER_PASSWORD
+        env:
+          DOCKER_REGISTRY_URL: docker.pkg.github.com
+
   build_backend_production:
     name: Build the final production image for the backend
     runs-on: ubuntu-latest
@@ -41,7 +53,9 @@ jobs:
       - name: build.backend.production
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/frontend/Dockerfile -t smarttrademanager/backend:latest .
+          args: build -f .docker/frontend/Dockerfile -t backend .
+      - uses: actions/docker/tag@master
+        args: backend docker.pkg.github.com/jorijn/smart-trade-manager/backend
 
   build_frontend_production:
     name: Build the final production image for the frontend
@@ -53,4 +67,6 @@ jobs:
       - name: build.frontend.production
         uses: actions/docker/cli@master
         with:
-          args: build -f .docker/frontend/Dockerfile -t smarttrademanager/frontend:latest .
+          args: build -f .docker/frontend/Dockerfile -t frontend .
+      - uses: actions/docker/tag@master
+        args: frontend docker.pkg.github.com/jorijn/smart-trade-manager/frontend
