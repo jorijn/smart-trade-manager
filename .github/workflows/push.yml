@@ -34,7 +34,7 @@ jobs:
   login_docker_registry:
     name: Login on the Github package registry
     runs-on: ubuntu-latest
-    if: github.event_name == 'tag'
+    if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - uses: actions/docker/login@master
         env:
@@ -45,7 +45,7 @@ jobs:
   build_backend_production:
     name: Build the final production image for the backend
     runs-on: ubuntu-latest
-    if: github.event_name == 'tag'
+    if: github.event_name == 'release' && github.event.action == 'published'
     needs: build_frontend_test
     steps:
       - uses: actions/checkout@master
@@ -60,7 +60,7 @@ jobs:
   build_frontend_production:
     name: Build the final production image for the frontend
     runs-on: ubuntu-latest
-    if: github.event_name == 'tag'
+    if: github.event_name == 'release' && github.event.action == 'published'
     needs: build_frontend_test
     steps:
       - uses: actions/checkout@master
