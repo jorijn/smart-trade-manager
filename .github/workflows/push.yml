@@ -37,11 +37,10 @@ jobs:
     if: github.event_name == 'tag'
     steps:
       - uses: actions/docker/login@master
-        secrets:
-          - DOCKER_USERNAME
-          - DOCKER_PASSWORD
         env:
           DOCKER_REGISTRY_URL: docker.pkg.github.com
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   build_backend_production:
     name: Build the final production image for the backend
