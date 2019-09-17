@@ -54,7 +54,8 @@ jobs:
         with:
           args: build -f .docker/frontend/Dockerfile -t backend .
       - uses: actions/docker/tag@master
-        args: backend docker.pkg.github.com/jorijn/smart-trade-manager/backend
+        with:
+          args: backend docker.pkg.github.com/jorijn/smart-trade-manager/backend
 
   build_frontend_production:
     name: Build the final production image for the frontend
@@ -68,4 +69,5 @@ jobs:
         with:
           args: build -f .docker/frontend/Dockerfile -t frontend .
       - uses: actions/docker/tag@master
-        args: frontend docker.pkg.github.com/jorijn/smart-trade-manager/frontend
+        with:
+          args: frontend docker.pkg.github.com/jorijn/smart-trade-manager/frontend
