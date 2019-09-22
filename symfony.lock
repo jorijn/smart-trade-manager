@@ -1,40 +1,4 @@
 {
-    "amphp/amp": {
-        "version": "v2.2.0"
-    },
-    "amphp/byte-stream": {
-        "version": "v1.6.1"
-    },
-    "amphp/cache": {
-        "version": "v1.2.0"
-    },
-    "amphp/dns": {
-        "version": "v0.9.15"
-    },
-    "amphp/http": {
-        "version": "v1.3.0"
-    },
-    "amphp/parser": {
-        "version": "v1.0.0"
-    },
-    "amphp/process": {
-        "version": "v1.1.0"
-    },
-    "amphp/socket": {
-        "version": "v0.10.12"
-    },
-    "amphp/uri": {
-        "version": "v0.1.4"
-    },
-    "amphp/websocket-client": {
-        "version": "v0.2.4"
-    },
-    "amphp/windows-registry": {
-        "version": "v0.3.2"
-    },
-    "daverandom/libdns": {
-        "version": "v2.0.1"
-    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
@@ -114,17 +78,14 @@
     "doctrine/reflection": {
         "version": "v1.0.0"
     },
+    "evenement/evenement": {
+        "version": "v3.0.1"
+    },
+    "guzzlehttp/psr7": {
+        "version": "1.6.1"
+    },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
-    },
-    "league/uri-interfaces": {
-        "version": "1.1.1"
-    },
-    "league/uri-parser": {
-        "version": "1.4.1"
-    },
-    "league/uri-schemes": {
-        "version": "1.2.1"
     },
     "monolog/monolog": {
         "version": "1.24.0"
@@ -158,6 +119,36 @@
     },
     "psr/log": {
         "version": "1.1.0"
+    },
+    "ralouphie/getallheaders": {
+        "version": "3.0.3"
+    },
+    "ratchet/pawl": {
+        "version": "v0.3.4"
+    },
+    "ratchet/rfc6455": {
+        "version": "v0.2.5"
+    },
+    "react/cache": {
+        "version": "v1.0.0"
+    },
+    "react/dns": {
+        "version": "v1.2.0"
+    },
+    "react/event-loop": {
+        "version": "v1.1.0"
+    },
+    "react/promise": {
+        "version": "v2.7.1"
+    },
+    "react/promise-timer": {
+        "version": "v1.5.1"
+    },
+    "react/socket": {
+        "version": "v1.3.0"
+    },
+    "react/stream": {
+        "version": "v1.1.0"
     },
     "symfony/asset": {
         "version": "v4.3.3"

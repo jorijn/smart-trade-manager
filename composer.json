@@ -10,7 +10,7 @@
     "ext-json": "*",
     "ext-pcntl": "*",
     "ext-redis": "*",
-    "amphp/websocket-client": "^0.2.4",
+    "ratchet/pawl": "^0.3.4",
     "symfony/asset": "4.3.*",
     "symfony/cache": "4.3.*",
     "symfony/console": "4.3.*",

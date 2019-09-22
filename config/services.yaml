@@ -33,6 +33,7 @@ services:
       - "@event.bus"
       - "@command.bus"
       - "@logger"
+      - "@app.component.react.loop"
     tags:
       - { name: console.command }
 
@@ -350,25 +351,25 @@ services:
           name: doctrine.orm.entity_listener,
           event: postPersist,
           entity: App\Model\ExchangeOrder,
-          method: __invoke
+          method: __invoke,
         }
       - {
           name: doctrine.orm.entity_listener,
           event: postUpdate,
           entity: App\Model\ExchangeOrder,
-          method: __invoke
+          method: __invoke,
         }
       - {
           name: doctrine.orm.entity_listener,
           event: postPersist,
           entity: App\Model\ExchangeOcoOrder,
-          method: __invoke
+          method: __invoke,
         }
       - {
           name: doctrine.orm.entity_listener,
           event: postUpdate,
           entity: App\Model\ExchangeOcoOrder,
-          method: __invoke
+          method: __invoke,
         }
 
   App\EventListener\JsonRequestBodyEventListener:
@@ -380,6 +381,12 @@ services:
     class: App\Component\ExchangePriceFormatter
     arguments:
       - "@logger"
+
+  app.component.react.loop:
+    class: React\EventLoop\LoopInterface
+    factory:
+      - "React\\EventLoop\\Factory"
+      - "create"
 
   # FORM TYPE CONFIGURATION
   app.form.type.trade:
