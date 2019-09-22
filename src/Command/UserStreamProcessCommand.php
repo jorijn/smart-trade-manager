@@ -144,10 +144,10 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
                 ]);
             });
 
-        $this->loop->run();
-
         $this->registerKeyRenewalTimer();
         $this->registerSignalDispatcher();
+
+        $this->loop->run();
     }
 
     protected function onWebsocketPayload(string $payload): void
@@ -181,11 +181,13 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
             'Websocket closed',
             ['listenKey' => $this->listenKey, 'code' => $code, 'reason' => $reason]
         );
+
+        $this->loop->stop();
     }
 
     protected function registerKeyRenewalTimer(): void
     {
-        $this->loop->addPeriodicTimer(1800, function () {
+        $this->loop->addPeriodicTimer(1800.0, function () {
             $this->logger->info('Sending ping for websocket', ['listenKey' => $this->listenKey]);
             $this->httpClient->request(
                 'PUT',
