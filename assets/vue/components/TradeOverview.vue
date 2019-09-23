@@ -98,7 +98,9 @@
                 </v-list-item>
                 <v-divider></v-divider>
                 <v-list-item>
-                  <v-list-item-title>Close Trade</v-list-item-title>
+                  <v-list-item-title @click="$emit('close-trade', item.id)"
+                    >Close Trade</v-list-item-title
+                  >
                 </v-list-item>
               </v-list>
             </v-menu>

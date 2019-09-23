@@ -12,6 +12,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Messenger\HandleTrait;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -49,6 +50,26 @@ class TradeController
     public function getActiveTrades(): JsonResponse
     {
         return new JsonResponse($this->handle(new ActiveTradesQuery()));
+    }
+
+    /**
+     * @param int $tradeId
+     *
+     * @return JsonResponse
+     */
+    public function closeTrade(int $tradeId): JsonResponse
+    {
+        $trade = $this->manager->find(Trade::class, $tradeId);
+        if (!$trade instanceof Trade) {
+            throw new NotFoundHttpException('trade with ID '.$tradeId.' was not found');
+        }
+
+        $trade->setActive(false);
+
+        $this->manager->persist($trade);
+        $this->manager->flush();
+
+        return new JsonResponse($trade);
     }
 
     /**

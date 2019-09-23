@@ -21,6 +21,11 @@ api_get_trades:
   methods: [GET]
   controller: app.controller.trade_controller::getActiveTrades
 
+api_close_trade:
+  path: /api/v1/trade/{tradeId}/close
+  methods: [GET]
+  controller: app.controller.trade_controller::closeTrade
+
 api_post_new_trade:
   path: /api/v1/trade
   methods: [POST]

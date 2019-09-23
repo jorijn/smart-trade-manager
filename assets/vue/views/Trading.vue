@@ -5,6 +5,7 @@
       <trade-overview
         @tradeCreate="getActiveTrades"
         v-on:refresh-trade-list="getActiveTrades"
+        v-on:close-trade="closeTrade"
         :symbols="symbols"
         :loading="overviewLoading"
         :trades="trades"
@@ -52,6 +53,21 @@ export default {
             );
             return order;
           });
+      } catch (error) {
+        this.overviewLoading = false;
+      }
+    },
+    async closeTrade(id) {
+      try {
+        this.overviewLoading = true;
+        await axios.get(`/api/v1/trade/${id}/close`);
+
+        const index = this.trades.findIndex(t => t.id === id);
+        if (index !== -1) {
+          this.trades.splice(index, 1);
+        }
+
+        this.overviewLoading = false;
       } catch (error) {
         this.overviewLoading = false;
       }
