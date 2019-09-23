@@ -44,9 +44,13 @@ RUN set -xe \
         g++ \
     && apk add --no-cache --virtual BUILD_DEPS_PHP_AMQP rabbitmq-c-dev \
     && apk add --no-cache rabbitmq-c \
+    && apk add --no-cache libevent libevent-dev openssl-dev \
+    && docker-php-ext-install -j$(nproc) sockets \
     && pecl install amqp \
-    && docker-php-ext-enable amqp \
+    && pecl install event \
     && pecl install redis \
+    && docker-php-ext-enable amqp \
+    && docker-php-ext-enable event \
     && docker-php-ext-enable redis \
     && apk add --no-cache --virtual BUILD_DEPS_PHP_PGSQL postgresql-dev \
     && apk add --no-cache postgresql-libs \
