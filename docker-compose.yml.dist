@@ -31,6 +31,7 @@ services:
       - "/app/bin/console"
       - "app:user-stream:process"
       - "-vvv"
+      - "--time-limit=43200"
     env_file:
       - .env.local
     depends_on:

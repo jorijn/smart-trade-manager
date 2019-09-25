@@ -14,6 +14,7 @@ use React\EventLoop\LoopInterface;
 use React\Socket\Connector as ReactConnector;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -91,6 +92,19 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure(): void
+    {
+        $this->addOption(
+            'time-limit',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'The time limit in seconds the worker can run'
+        );
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // set the signal handler so we can close the websocket when the process is killed
@@ -109,12 +123,17 @@ class UserStreamProcessCommand extends Command implements LoggerAwareInterface
 
         $this->listenKey = $this->accessor->getValue($response->toArray(false), '[listenKey]');
 
-        $this->createWebsocket();
+        $timeLimit = $input->getOption('time-limit');
+        if ($timeLimit) {
+            $this->loop->addTimer((int) $timeLimit, function () use ($timeLimit) {
+                $this->websocket->close(1000, sprintf('reached time limit of %d seconds', $timeLimit));
+            });
+        }
 
-        return 0;
+        $this->startLoop();
     }
 
-    protected function createWebsocket()
+    protected function startLoop()
     {
         $reactConnector = new ReactConnector($this->loop, [
             'dns' => $this->dns,
