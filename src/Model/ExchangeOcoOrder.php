@@ -283,7 +283,7 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setQuantity(string $quantity): ExchangeOcoOrder
     {
-        $this->quantity = number_format($quantity, 18, '.', '');
+        $this->quantity = $quantity;
 
         return $this;
     }
@@ -303,7 +303,7 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setPrice(string $price): ExchangeOcoOrder
     {
-        $this->price = number_format($price, 18, '.', '');
+        $this->price = $price;
 
         return $this;
     }
@@ -323,7 +323,7 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setStopPrice(string $stopPrice): ExchangeOcoOrder
     {
-        $this->stopPrice = number_format($stopPrice, 18, '.', '');
+        $this->stopPrice = $stopPrice;
 
         return $this;
     }
@@ -343,7 +343,7 @@ class ExchangeOcoOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setStopLimitPrice(string $stopLimitPrice): ExchangeOcoOrder
     {
-        $this->stopLimitPrice = number_format($stopLimitPrice, 18, '.', '');
+        $this->stopLimitPrice = $stopLimitPrice;
 
         return $this;
     }

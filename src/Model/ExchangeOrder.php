@@ -125,10 +125,6 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setFilledQuoteQuantity(?string $filledQuoteQuantity): ExchangeOrder
     {
-        if ($filledQuoteQuantity) {
-            $filledQuoteQuantity = number_format($filledQuoteQuantity, 18, '.', '');
-        }
-
         $this->filledQuoteQuantity = $filledQuoteQuantity;
 
         return $this;
@@ -285,7 +281,7 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setQuantity(string $quantity): ExchangeOrder
     {
-        $this->quantity = number_format($quantity, 18, '.', '');
+        $this->quantity = $quantity;
 
         return $this;
     }
@@ -305,7 +301,7 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setPrice(string $price): ExchangeOrder
     {
-        $this->price = number_format($price, 18, '.', '');
+        $this->price = $price;
 
         return $this;
     }
@@ -328,10 +324,6 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
         if ($stopPrice === '0.00000000') {
             // 0.00000000 means empty
             return $this;
-        }
-
-        if ($stopPrice) {
-            $stopPrice = number_format($stopPrice, 18, '.', '');
         }
 
         $this->stopPrice = $stopPrice;
@@ -434,10 +426,6 @@ class ExchangeOrder implements ExchangeOrderInterface, \JsonSerializable
      */
     public function setFilledQuantity(?string $filledQuantity): ExchangeOrder
     {
-        if ($filledQuantity) {
-            $filledQuantity = number_format($filledQuantity, 18, '.', '');
-        }
-
         $this->filledQuantity = $filledQuantity;
 
         return $this;
