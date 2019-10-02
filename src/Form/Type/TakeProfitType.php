@@ -27,7 +27,12 @@ class TakeProfitType extends AbstractType
                 'required' => true,
                 'constraints' => [
                     new NotBlank(),
-                    new Regex(TradeType::PRICE_REGEX),
+                    new Regex([
+                        'pattern' => TradeType::PRICE_REGEX,
+                        'normalizer' => static function ($value) {
+                            return number_format($value, 18, '.', '');
+                        },
+                    ]),
                 ],
             ])
             // TODO check this against min. nominal setting of symbol

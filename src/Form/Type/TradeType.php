@@ -55,7 +55,12 @@ class TradeType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new Positive(),
-                    new Regex(self::PRICE_REGEX),
+                    new Regex([
+                        'pattern' => self::PRICE_REGEX,
+                        'normalizer' => static function ($value) {
+                            return number_format($value, 18, '.', '');
+                        },
+                    ]),
                     new Callback(static function ($object, ExecutionContextInterface $context) {
                         if ($object === null || $object === '') {
                             return;
@@ -96,7 +101,12 @@ class TradeType extends AbstractType
                 'constraints' => [
                     new NotBlank(),
                     new Positive(),
-                    new Regex(self::PRICE_REGEX),
+                    new Regex([
+                        'pattern' => self::PRICE_REGEX,
+                        'normalizer' => static function ($value) {
+                            return number_format($value, 18, '.', '');
+                        },
+                    ]),
                 ],
             ])
             ->add('entryHigh', MoneyType::class, [
@@ -105,7 +115,12 @@ class TradeType extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new Positive(),
-                    new Regex(self::PRICE_REGEX),
+                    new Regex([
+                        'pattern' => self::PRICE_REGEX,
+                        'normalizer' => static function ($value) {
+                            return number_format($value, 18, '.', '');
+                        },
+                    ]),
                     new Callback(static function ($object, ExecutionContextInterface $context) {
                         if ($object === null || $object === '') {
                             return;

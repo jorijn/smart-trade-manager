@@ -99,8 +99,7 @@ class SynchronizeOrderHistoryHandlerTest extends TestCase
             if (in_array($order->getOrderId(), $updatesExpected, true)) {
                 $order->expects(self::once())->method('update')->with($ordersOnExchange[$order->getOrderId()]);
                 $persistedOrders[] = $order;
-            }
-            else {
+            } else {
                 $order->expects(self::never())->method('update');
             }
         }

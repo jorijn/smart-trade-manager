@@ -107,7 +107,7 @@ class Trade implements \JsonSerializable
      */
     public function setEntryLow(string $entryLow): Trade
     {
-        $this->entryLow = $entryLow;
+        $this->entryLow = number_format($entryLow, 18, '.', '');
 
         return $this;
     }
@@ -127,6 +127,10 @@ class Trade implements \JsonSerializable
      */
     public function setEntryHigh(?string $entryHigh): Trade
     {
+        if ($entryHigh) {
+            $entryHigh = number_format($entryHigh, 18, '.', '');
+        }
+
         $this->entryHigh = $entryHigh;
 
         return $this;
@@ -204,6 +208,10 @@ class Trade implements \JsonSerializable
      */
     public function setStoploss(?string $stoploss): Trade
     {
+        if ($stoploss) {
+            $stoploss = number_format($stoploss, 18, '.', '');
+        }
+
         $this->stoploss = $stoploss;
 
         return $this;

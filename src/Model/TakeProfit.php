@@ -90,7 +90,7 @@ class TakeProfit implements \JsonSerializable
      */
     public function setPrice(string $price): TakeProfit
     {
-        $this->price = $price;
+        $this->price = number_format($price, 18, '.', '');
 
         return $this;
     }
