@@ -73,7 +73,7 @@ class CreateExchangeOrdersHandler implements LoggerAwareInterface
                 $this->logger->error('Failed to create order: {reason}', [
                     'code' => $exception->getCode(),
                     'reason' => $exception->getMessage(),
-                    'request' => $order->toApiAttributes()
+                    'request' => $order->toApiAttributes(),
                 ]);
             }
         }

@@ -32,10 +32,11 @@ class ExchangePriceFormatter implements LoggerAwareInterface
      */
     public function roundStep(Symbol $symbol, string $quantity, $market = false): string
     {
+        $quantity = number_format($quantity, 18, '.', '');
         $desiredDecimals = $this->getStepScale($symbol, $market);
         $decimalIndex = strpos($quantity, '.');
 
-        return substr($quantity, 0, $decimalIndex + $desiredDecimals + (int) ($desiredDecimals > 0));
+        return (string) substr($quantity, 0, $decimalIndex + $desiredDecimals + (int) ($desiredDecimals > 0));
     }
 
     /**
@@ -107,6 +108,7 @@ class ExchangePriceFormatter implements LoggerAwareInterface
      */
     public function roundTicks(Symbol $symbol, string $price): string
     {
+        $price = number_format($price, 18, '.', '');
         $precision = $this->getPriceScale($symbol);
 
         return (string) round((float) $price, $precision);
