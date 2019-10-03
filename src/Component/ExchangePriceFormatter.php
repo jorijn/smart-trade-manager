@@ -111,7 +111,7 @@ class ExchangePriceFormatter implements LoggerAwareInterface
         $price = number_format($price, 18, '.', '');
         $precision = $this->getPriceScale($symbol);
 
-        return (string) round((float) $price, $precision);
+        return number_format((float) $price, $precision, '.', '');
     }
 
     /**

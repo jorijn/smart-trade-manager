@@ -58,8 +58,8 @@ class LimitLadderBuyOrderGenerator extends AbstractOrderGenerator
             $order = new ExchangeOrder();
             $order->setSymbol($validatedSymbol->getSymbol());
             $order->setSide(ExchangeOrder::BUY);
-            $order->setPrice($price);
-            $order->setQuantity($quantity);
+            $order->setPrice($this->formatter->roundTicks($validatedSymbol, $price));
+            $order->setQuantity($this->formatter->roundStep($validatedSymbol, $quantity));
             $order->setType(ExchangeOrder::LIMIT);
             $order->setTrade($trade);
 
